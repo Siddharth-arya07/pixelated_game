@@ -12,7 +12,7 @@ import PartySocket from 'partysocket';
  *
  * Offline (no room) everything is a no-op, so systems can call net.* freely.
  */
-const HOST = import.meta.env.VITE_PARTY_HOST || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'localhost:1999' : 'three-am-rooms.siddhartharya.partykit.dev');
+const HOST = import.meta.env.VITE_PARTY_HOST || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'localhost:1999' : 'three-am-rooms.mannusheoran55.workers.dev');
 
 export class Net {
   constructor(game) {
