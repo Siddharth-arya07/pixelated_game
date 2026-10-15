@@ -51,8 +51,8 @@ On the title card, enter a name (everyone plays as mia's character). Then choose
 - **Map:** friends show as blue dots.
 
 **Running it:**
-- **Locally:** run `npm run party` (the room server, port 1999) next to `npm run dev`.
-- **Online:** deploy the room server once with `npx partykit login` then `npm run party:deploy`. Put the URL it prints in `VITE_PARTY_HOST` (or edit `src/net/Net.js`), then rebuild and redeploy the site.
+- **Locally:** run `npm run rooms` (the Cloudflare room server, port 1999) next to `npm run dev`.
+- **Online:** deploy the room server (Cloudflare Worker + Durable Objects) once with `npx wrangler login` then `npm run rooms:deploy`. Put the host it prints in `VITE_ROOMS_HOST` (or edit `src/net/Net.js`), then rebuild and redeploy the site.
 - **Voice relay (optional):** for networks that block peer-to-peer voice, set `VITE_TURN_URL`, `VITE_TURN_USER` and `VITE_TURN_PASS` to a TURN relay.
 
 **Character:** mia's model (rigged), animated in code on top of her idle clip. The guy character was removed because his model has no rig.
@@ -237,8 +237,9 @@ src/
               DinerScene · DriveIn · Railway · Telescope · Garden · HouseScene · GroceryStoreScene · LakeScene · WorldScene · LighthouseScene · Playground (sandbox, swings)
   ui/         index.html · style.css · WalkmanUI · JournalUI · TouchControls · MapUI · HUD · InventoryUI · ShopUI · FishingUI
   assets/     manifest.js · models/ · textures/ · audio/ · music/ · videos/
-party/
-  server.js           PartyKit room server (relay, host, world snapshot, voice signalling)
+cloudflare/
+  worker.js           Cloudflare Worker + Durable Object room server (relay, host, world snapshot, voice signalling)
+  wrangler.toml       Worker config
 tools/
   blender_export.py   converts downloaded packs into the bundled GLBs (embeds textures, decimates)
 ```

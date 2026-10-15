@@ -1,8 +1,8 @@
 /**
  * 3:00 a.m. — multiplayer room server on Cloudflare (Worker + Durable Objects).
  *
- * Same protocol as the old PartyKit server (party/server.js), so the client's
- * PartySocket connects unchanged: wss://<worker>/parties/main/<room>
+ * The client (src/net/Net.js) connects with a plain WebSocket:
+ *   wss://<worker>/parties/main/<room>?_pk=<client id>
  *
  * One Durable Object per room = one shared night for up to MAX players.
  *   hello → welcome (your id, who's here, the host, world snapshot)
