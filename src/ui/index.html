@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="theme-color" content="#000000" />
+    <title>3:00 a.m.</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Caveat:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/ui/style.css" />
+  </head>
+  <body>
+    <!-- Three.js canvas (our PSX pipeline) gets mounted here -->
+    <div id="game-root"></div>
+
+    <!-- Everything below is the HTML UI overlay, layered over the canvas -->
+    <div id="ui">
+      <!-- HUD -->
+      <div id="hud" class="hidden">
+        <div id="crosshair"></div>
+        <div id="prompt" class="hidden"></div>
+        <div id="clock">3:00 a.m.</div>
+        <div id="location"></div>
+        <div id="money">$50.00</div>
+        <div id="hunger" title="hunger"><b>FOOD</b><span><i></i></span></div>
+        <div id="equipped"></div>
+        <div id="speedo" class="hidden"></div>
+        <div id="ammo" class="hidden"></div>
+        <div id="toasts"></div>
+        <div id="controls-hint"></div>
+      </div>
+
+      <div id="death" class="hidden"><div><span>You passed out from hunger.</span><small></small></div></div>
+
+      <!-- Inventory (I) -->
+      <div id="inventory" class="panel hidden">
+        <div class="panel-title">INVENTORY <span class="panel-close">[I] close</span></div>
+        <div id="inventory-list" class="item-grid"></div>
+        <div id="inventory-detail" class="detail"></div>
+      </div>
+
+      <!-- Shop -->
+      <div id="shop" class="panel hidden">
+        <div class="panel-title"><span id="shop-name">SHOP</span> <span class="panel-close">[ESC] leave</span></div>
+        <div id="shop-money" class="shop-money"></div>
+        <div id="shop-list" class="shop-list"></div>
+        <div id="shop-msg" class="detail"></div>
+      </div>
+
+      <!-- Fishing minigame -->
+      <div id="fishing" class="hidden">
+        <div id="fishing-status"></div>
+        <div class="meter-wrap" id="power-wrap">
+          <div class="meter-label">CAST POWER</div>
+          <div class="meter"><div id="power-fill" class="meter-fill"></div></div>
+        </div>
+        <div class="meter-wrap hidden" id="tension-wrap">
+          <div class="meter-label">LINE TENSION</div>
+          <div class="meter tension"><div id="tension-fill" class="meter-fill"></div></div>
+          <div class="meter-label">DISTANCE <span id="fish-distance">0.0m</span></div>
+        </div>
+      </div>
+
+      <!-- Screen fade used for scene transitions -->
+      <div id="fade"></div>
+
+      <!-- Loading / title / pause -->
+      <div id="overlay">
+        <div id="title-card">
+          <div class="title">3:00 a.m.</div>
+          <div id="loading-text" class="sub">loading...</div>
+          <div id="loading-bar"><div id="loading-fill"></div></div>
+          <div id="start-hint" class="sub hidden">click to start</div>
+          <!-- Multiplayer lobby (clicks here don't start the game by themselves) -->
+          <div id="lobby" class="hidden">
+            <div class="lb-row">
+              <input id="lb-name" maxlength="16" placeholder="your name" />
+            </div>
+            <div class="lb-row">
+              <button id="lb-solo">play alone</button>
+              <button id="lb-host">host a room</button>
+              <input id="lb-code" maxlength="4" placeholder="CODE" />
+              <button id="lb-join">join</button>
+            </div>
+            <div id="lb-status"></div>
+          </div>
+          <!-- Settings (clicks here don't start/resume the game) -->
+          <div id="settings">
+            <label>graphics
+              <select id="set-gfx">
+                <option value="ps1">PS1 — 240p, wobbly, dithered</option>
+                <option value="ps2">PS2 — 448p, smooth, filtered</option>
+              </select>
+            </label>
+            <label>weather
+              <select id="set-weather">
+                <option value="auto">storms come and go</option>
+                <option value="storm">always storming</option>
+                <option value="clear">no storms</option>
+              </select>
+            </label>
+            <label>mouse sensitivity <input type="range" id="set-sens" min="0.2" max="3" step="0.05" value="1" /> <span id="set-sens-v">1.00</span></label>
+            <label>retro wobble <input type="range" id="set-retro" min="0" max="1" step="0.05" value="0.6" /> <span id="set-retro-v">0.60</span></label>
+          </div>
+          <div class="keys">
+            WASD move &middot; MOUSE look &middot; E interact &middot; Q secondary &middot; I inventory &middot; M map &middot; P walkman &middot; J journal<br />
+            online: V mute mic &middot; 1 wave &middot; 2 point &middot; 3 sit &middot; 4 lie down &middot; E on a friend = give &middot; E on their vehicle = ride along<br />
+            driving: W/S gas/brake &middot; A/D steer &middot; SPACE handbrake &middot; F lights &middot; E exit<br />
+            smoking: hold LMB drag &middot; R flick ash &middot; G toss<br />
+            shotgun: LMB fire &middot; RMB aim &middot; R reload
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

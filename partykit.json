@@ -1,0 +1,6 @@
+{
+  "$schema": "https://www.partykit.io/schema.json",
+  "name": "three-am-rooms",
+  "main": "party/server.js",
+  "compatibilityDate": "2024-09-01"
+}
