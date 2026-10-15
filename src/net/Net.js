@@ -12,7 +12,10 @@ import PartySocket from 'partysocket';
  *
  * Offline (no room) everything is a no-op, so systems can call net.* freely.
  */
-const HOST = import.meta.env.VITE_PARTY_HOST || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'localhost:1999' : 'three-am-rooms.mannusheoran55.workers.dev');
+const LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+// Ignore a stale VITE_PARTY_HOST still pointing at the retired PartyKit server.
+const ENV_HOST = import.meta.env.VITE_PARTY_HOST && !/partykit\.dev/.test(import.meta.env.VITE_PARTY_HOST) ? import.meta.env.VITE_PARTY_HOST : '';
+const HOST = ENV_HOST || (LOCAL ? 'localhost:1999' : 'three-am-rooms.mannusheoran55.workers.dev');
 
 export class Net {
   constructor(game) {
@@ -51,7 +54,7 @@ export class Net {
     return new Promise((resolve, reject) => {
       const s = new PartySocket({ host: HOST, room: `night-${this.room}` });
       this.socket = s;
-      const timer = setTimeout(() => reject(new Error('Could not reach the room server.')), 8000);
+      const timer = setTimeout(() => reject(new Error(`Could not reach the room server (${HOST}).`)), 8000);
       s.addEventListener('open', () => s.send(JSON.stringify({ t: 'hello', ...profile })));
       s.addEventListener('message', (ev) => {
         let m;
