@@ -39,6 +39,7 @@ export const VEHICLES = [
     model: 'pickup_truck',
     label: 'truck',
     prompt: 'Get in the truck',
+    secondary: (v) => ({ label: 'Lie on the roof', action: () => v.game.meteors.lieOnRoof(v) }),
     // Old, heavy, tired: tops out around 27 mph and crawls up the mountain.
     maxSpeed: 12,
     maxReverse: 3.5,

@@ -102,6 +102,11 @@ JOBS = [
     ("bong", "user/bong.glb", {"ratio": 0.05, "tex": 256}),
     ("train", "user/tangara_sydney_trains_t_set.glb", {"ratio": 0.7, "tex": 256}),
     ("char_girl", "user/handpaint_-_girl_01.glb", {"tex": 512}),
+    # Poly Pizza, CC-BY 3.0: Drum Kit (smoj), Acoustic Guitar (Dave), Piano (jeremy), Microphone (Poly by Google)
+    ("drum_kit", "user/drums.glb", {"tex": 256}),
+    ("guitar", "user/guitar.glb", {"ratio": 0.3, "tex": 256}),
+    ("piano", "user/piano.glb", {"tex": 256}),
+    ("mic_stand", "user/mic.glb", {"tex": 256}),
     ("skateboard", "user/skateboard.glb", {"ratio": 0.2, "tex": 128}),
     ("telescope", "user/telescope.glb", {"ratio": 0.1, "tex": 256}),
     ("diner", "user/restaurant_in_the_evening.glb", {"ratio": 0.45, "ratio_above": 4000, "tex": 512}),

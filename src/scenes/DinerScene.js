@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { BaseScene } from './BaseScene.js';
 import { addMusicDevice, addSeat } from './Devices.js';
 import { signTexture } from '../core/Procedural.js';
+import { DinerJob } from './DinerJob.js';
 
 /**
  * DinerScene
@@ -117,6 +118,15 @@ export class DinerScene extends BaseScene {
       },
     });
 
+    // Night-shift job: HELP WANTED card on the counter's room side, plates come up at the far end.
+    this.job = new DinerJob(this, {
+      tables: this.tables,
+      floorY: fy,
+      center: new THREE.Vector3((b.min.x + b.max.x) / 2, 0, (b.min.z + b.max.z) / 2),
+      passAt: new THREE.Vector3(cx, fy + 1.12, cz - 1.35),
+      cardAt: new THREE.Vector3(cx + 0.31, fy + 0.75, cz + 0.6),
+    });
+
     // Jukebox by the counter.
     const jbx = cx + 0.4;
     const jbz = cz + 2.6;
@@ -145,6 +155,7 @@ export class DinerScene extends BaseScene {
       const yaw = Math.atan2(-(t.x - seatPos.x), -(t.z - seatPos.z));
       addSeat(this, vol, { eye: [seatPos.x, fy + 1.2, seatPos.z], yaw, pitch: -0.2, yawLimit: 1.5, standAt: [seatPos.x + toC.x * -0.6, fy, seatPos.z + toC.z * -0.6] }, 'Sit at the table');
     }
+
   }
 }
 

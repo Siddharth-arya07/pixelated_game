@@ -101,6 +101,10 @@ export const MODELS = {
   // native metres; an interior built with inward-facing walls and soft alpha:
   // keep both faces, no alpha cut-out, no affine swim on the big wall polys
   char_girl: { fit: { height: 1.65 } },
+  drum_kit: { fit: { length: 1.7 } }, // CC-BY 3.0 smoj (Poly Pizza)
+  guitar: { fit: { height: 1.0 } }, // CC-BY 3.0 Dave (Poly Pizza)
+  piano: { fit: { length: 1.55 } }, // CC-BY 3.0 jeremy (Poly Pizza)
+  mic_stand: { fit: { height: 1.55 } }, // CC-BY 3.0 Poly by Google
   diner: { psx: { doubleSide: true, alphaTest: 0, affine: 0 } },
 
   // --- Poly by Google via Poly Pizza (CC-BY 3.0) ---------------------------------

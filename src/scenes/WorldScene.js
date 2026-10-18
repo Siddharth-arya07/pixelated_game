@@ -5,6 +5,7 @@ import { buildGarden } from './Garden.js';
 import { addTelescope } from './Telescope.js';
 import { Railway } from './Railway.js';
 import { buildDriveIn } from './DriveIn.js';
+import { buildWishingWell } from './WishingWell.js';
 import { BaseScene } from './BaseScene.js';
 import { Terrain } from '../world/Terrain.js';
 import { MAP } from '../world/MapLayout.js';
@@ -66,6 +67,7 @@ export class WorldScene extends BaseScene {
     this.#harbor();
     this.#lighthouse();
     this.playground = buildPlayground(this, this.poi.playground);
+    buildWishingWell(this, this.poi.playground.x - 13, this.poi.playground.z + 9);
     this.railway = new Railway(this);
     this.drivein = buildDriveIn(this, this.poi.drivein);
     this.#diner();
@@ -159,6 +161,7 @@ export class WorldScene extends BaseScene {
     this.addLight({ position: [hx + 0.9, y + 2.5, hz + 5.2], color: 0xffc080, range: 7, intensity: 1, priority: 1.5 });
     this.garden = buildGarden(this, hx, y, hz);
     this.#rooftop(hx, y, hz);
+    this.#shed(hx - 10, y, hz + 1);
     this.addSpawn('house_door', [hx, y, hz + 5.6], Math.PI); // on the porch facing the road
     this.addSpawn('default', [hx, y, hz + 5.6], Math.PI);
     this.addSpawn('truck_home', [hx + 7, y, hz + 12], 0);
@@ -169,7 +172,7 @@ export class WorldScene extends BaseScene {
     const roofMat = this.mat({ color: 0x2c2628 });
     const wall = this.mat({ map: this.tex('siding', 3, 1.2), color: 0xb0a8a0 });
     const dark = this.mat({ color: 0x0c0e14, unlit: true });
-    for (const [x, z, r] of [[-300, 185, 0], [-255, 240, Math.PI], [-120, 222, Math.PI], [-85, 135, 0.6]]) {
+    for (const [x, z, r] of [[-305, 160, 0], [-245, 192, 0], [-120, 222, Math.PI], [-85, 135, 0.6]]) {
       const gy = this.groundHeight(x, z);
       this.box(8, 3, 7, wall, x, gy + 1.5, z, { rotY: r, segments: [3, 2, 3] });
       const rf = new THREE.Mesh(new THREE.ConeGeometry(6.4, 2, 4), roofMat);
@@ -363,6 +366,29 @@ export class WorldScene extends BaseScene {
     });
     // a couple of parked cars' worth of empty lot + a sign at the road
     this.#sign(['SEAVIEW DINER', 'OPEN 24 HRS ->'], p.x + 12, p.z + 16, Math.PI, { bg: '#1a3a4a' });
+  }
+
+  /** The music shed beside the house (inside: StudioScene). Door faces south. */
+  #shed(x, y, z) {
+    const g = this.game;
+    const wall = this.mat({ map: this.tex('siding', 2, 1), color: 0x8a7a8a });
+    this.box(5, 2.9, 4.2, wall, x, y + 1.45, z);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(3.8, 1.1, 4), this.mat({ color: 0x2a2224 }));
+    roof.position.set(x, y + 3.45, z);
+    roof.rotation.y = Math.PI / 4;
+    roof.scale.z = 0.85;
+    this.root.add(roof);
+    const door = this.box(1.0, 2.0, 0.06, this.mat({ color: 0x3a2a3a }), x, y + 1.0, z + 2.13, { collide: false });
+    this.addInteractable(door, { prompt: 'Go into the music shed', action: () => g.changeScene('Studio', 'door') });
+    this.addSpawn('studio_door', [x, y, z + 3.1], Math.PI);
+    // a lit window with coloured light, and a little sign
+    const win = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.6), this.mat({ color: 0xff7ab8, unlit: true }));
+    win.position.set(x + 1.6, y + 1.7, z + 2.11);
+    this.root.add(win);
+    this.addLight({ position: [x + 1.6, y + 1.6, z + 3.2], color: 0xff6ab0, range: 5, intensity: 0.8 });
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.35), this.mat({ map: signTexture(['MUSIC SHED'], { bg: '#2a1a3a', fg: '#ffd860', w: 96, h: 28 }) }));
+    sign.position.set(x, y + 2.35, z + 2.12);
+    this.root.add(sign);
   }
 
   #sign(lines, x, z, rotY, opts = {}) {
@@ -724,7 +750,7 @@ export class WorldScene extends BaseScene {
     const half = MAP.size / 2 - 10;
     let trees = 0;
     // Trees: dense on the mountain flanks, sparse in the valley.
-    for (let i = 0; i < 30000 && trees < 5600; i++) {
+    for (let i = 0; i < 38000 && trees < 7000; i++) {
       const x = (rand() * 2 - 1) * half;
       const z = (rand() * 2 - 1) * half;
       const y = T.heightAt(x, z);

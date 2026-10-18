@@ -74,6 +74,8 @@ export class InventoryUI {
     };
     // Using closes the menu so you can watch the animation.
     if (def.use) btn('Use', () => inv.use(id) && this.game.closeUI());
+    if (id === 'jar' && this.game.fireflies.jar) btn(`Let them go (${this.game.fireflies.jar})`, () => (this.game.fireflies.release(), this.game.closeUI()));
+    if (id === 'polaroid') btn('Photo album', () => (this.hide(), this.game.polaroid.show()));
     if (def.equip) btn(inv.equipped === id ? 'Unequip' : 'Equip', () => inv.equip(id));
     btn('Drop', () => {
       inv.remove(id);

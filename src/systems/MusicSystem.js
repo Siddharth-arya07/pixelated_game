@@ -16,7 +16,7 @@ import * as THREE from 'three';
  *   music.seek(seconds)          music.volume = 0..1
  *   music.current / .position / .duration / .playing / .spectrum()
  */
-const musicFiles = import.meta.glob('../assets/music/*.{mp3,ogg,wav}', { eager: true, query: '?url', import: 'default' });
+const musicFiles = import.meta.glob('../assets/music/*.{mp3,ogg,wav,m4a}', { eager: true, query: '?url', import: 'default' });
 
 /**
  * The mixtape. These are slots: the audio comes from files you load into
@@ -168,12 +168,16 @@ export class MusicSystem {
     this.#buildTape();
     this.tape = true;
 
-    this.tracks = MIXTAPE.map((m) => ({ ...m, kind: 'file', mixtape: true, url: null, blob: null, duration: 0 }));
+    // Bundled recordings first, then the mixtape slots, then the generative songs.
+    this.tracks = Object.entries(musicFiles).map(([path, url]) => ({
+      kind: 'file',
+      title: path.split('/').pop().replace(/\.[^.]+$/, '').replace(/[_]+/g, ' '),
+      artist: 'recorded at 3 a.m.',
+      url,
+      duration: 0,
+    }));
+    this.tracks.push(...MIXTAPE.map((m) => ({ ...m, kind: 'file', mixtape: true, url: null, blob: null, duration: 0 })));
     this.tracks.push(...SONGS.map((s) => ({ ...s, kind: 'gen', duration: (s.bars * 4 * 60) / s.bpm })));
-    for (const [path, url] of Object.entries(musicFiles)) {
-      const name = path.split('/').pop().replace(/\.[^.]+$/, '');
-      this.tracks.push({ kind: 'file', title: name.replace(/[_-]+/g, ' '), artist: 'local file', url, duration: 0 });
-    }
     this.index = 0;
     this.playing = false;
     this.headphones = false;

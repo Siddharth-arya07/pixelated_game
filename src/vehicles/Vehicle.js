@@ -91,6 +91,7 @@ export class Vehicle {
       available: () => (this.remoteDriver && !(this.cfg.passengers ?? []).length ? `${this.remoteName}'s ${this.label}` : true),
       range: this.cfg.interactRange ?? 3.5,
       action: () => this.system.enter(this),
+      secondary: () => (this.cfg.secondary && !this.remoteDriver ? this.cfg.secondary(this) : null),
       enabled: () => !this.driving && !this.system.active && !this.game.mp?.ride,
     });
     this.game.player.dynamicObstacles.push(this.obstacle);

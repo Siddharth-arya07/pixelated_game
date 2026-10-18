@@ -59,6 +59,22 @@ export const ITEMS = {
   burnt_food: { name: 'Burnt Something', desc: 'It was food once.', color: '#2a2018', use: 'eatChips', food: 6 },
   popcorn: { name: 'Popcorn', desc: 'From the drive-in snack bar. Stale, buttery, perfect.', color: '#f0e0a0', use: 'eatChips', food: 18 },
   weed: { name: 'Weed', desc: 'A gram from the stash tin. Use it to smoke a quick one (needs a lighter), or hit the bong by the couch for more.', color: '#4a7a2a', use: 'smokeWeed' },
+  jar: { name: 'Mason Jar', desc: 'Equip it outside on a warm night: LMB catches fireflies. A full jar is a lantern.', color: '#b8d8c8', equip: true },
+  polaroid: { name: 'Polaroid OneStep', desc: 'Instant camera. Equip: LMB snap · Q/scroll film stock · RMB zoom · K album. Needs instant film.', color: '#e8e4dc', equip: true },
+  polaroid_film: { name: 'Instant Film', desc: 'A pack of 10 instant photos.', color: '#2a2a30' },
+  quantum_book: { name: '“Small Things”', desc: 'A paperback on quantum mechanics. Use to read.', color: '#1a2a5a', use: 'readBook' },
+  fw_rocket: { name: 'Sky Rocket', desc: 'Single shell: a big round peony burst. Use outside (needs a lighter).', color: '#c02020', use: 'firework' },
+  fw_chrys: { name: 'Chrysanthemum Shell', desc: 'Trailing stars that change colour as they fall.', color: '#d04080', use: 'firework' },
+  fw_willow: { name: 'Crackling Willow', desc: 'Long drooping gold that crackles at the end.', color: '#d0a030', use: 'firework' },
+  fw_palm: { name: 'Golden Palm', desc: 'Thick gold comets that fall like palm fronds.', color: '#e0b040', use: 'firework' },
+  fw_ring: { name: 'Saturn Ring', desc: 'A perfect ring around a little core.', color: '#4060d0', use: 'firework' },
+  fw_heart: { name: 'Heart Shell', desc: 'Bursts into a pink heart, facing you.', color: '#f070a0', use: 'firework' },
+  fw_crossette: { name: 'Crossette', desc: 'Stars that split into crosses mid-air.', color: '#30a060', use: 'firework' },
+  fw_strobe: { name: 'Glitter Strobe', desc: 'Silver stars that blink and twinkle.', color: '#c0c8d8', use: 'firework' },
+  fw_roman: { name: 'Roman Candle', desc: '8 coloured balls, one after another.', color: '#20a050', use: 'firework' },
+  fw_fountain: { name: 'Ground Fountain', desc: '20 seconds of sparks, gold → silver → red & green.', color: '#2050b0', use: 'firework' },
+  fw_cake: { name: '25-Shot Cake', desc: 'The finale. Comets, mixed shells, then everything at once.', color: '#b01818', use: 'firework' },
+  fw_sparkler: { name: 'Sparklers', desc: 'Handheld. Wave it around.', color: '#a0a0a0', use: 'firework' },
   flashlight: { name: 'Flashlight', desc: 'Lights the way. Toggle with L when equipped.', color: '#b0b0b0', equip: true },
   // --- catches -----------------------------------------------------------
   fish_perch: { name: 'Yellow Perch', desc: 'Small and bony.', color: '#c0b040', value: 4, catch: true },
@@ -162,6 +178,11 @@ export class InventorySystem {
     }
     if (vm.busy) {
       g.hud.toast('Hands are full.');
+      return false;
+    }
+    if (def.use === 'firework') return g.fireworks.use(id);
+    if (def.use === 'readBook') {
+      setTimeout(() => g.openUI(() => g.book.show()), 0);
       return false;
     }
     const anim = USE_ANIM[def.use];

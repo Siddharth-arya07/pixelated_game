@@ -3,10 +3,13 @@ import { FLOWERS } from './Garden.js';
 import { paintOil, PAINTINGS } from '../render/OilPaint.js';
 import selfieUrl from '../assets/photos/photo_selfie.png?url';
 import togetherUrl from '../assets/photos/photo_together.png?url';
+import dinerUrl from '../assets/photos/photo_diner.png?url';
+import tableUrl from '../assets/photos/photo_table.png?url';
 
 const NOTE_TEXT =
   "i know ur going through a lot of stuff rn but from what i can see is ur future is bright and seeing u win will make me more happy than u can imagine, hard times pass and this will pass too\n\nand i like my women in stem ;)";
 import { BaseScene } from './BaseScene.js';
+import { signTexture } from '../core/Procedural.js';
 import { ComputerOS } from '../computer/ComputerOS.js';
 import { addTV, addMusicDevice, addSeat } from './Devices.js';
 
@@ -124,6 +127,22 @@ export class HouseScene extends BaseScene {
 
     // Counter clutter (ref #4: a can next to the microwave).
     this.place('soda_can', { x: run[0].position.x + 0.42, y: top, z: N + 0.35 });
+    // An empty mason jar (for fireflies).
+    const jar = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.14, 10), this.mat({ color: 0xc8e8d8, opacity: 0.55 }));
+    jar.position.set(run[0].position.x + 0.65, top + 0.07, N + 0.32);
+    const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.052, 0.02, 10), this.mat({ color: 0xc8a040 }));
+    lid.position.y = 0.08;
+    jar.add(lid);
+    this.root.add(jar);
+    this.addInteractable(jar, {
+      prompt: 'Take the empty jar',
+      action: () => {
+        g.inventory.add('jar');
+        jar.removeFromParent();
+        this.interactables = this.interactables.filter((o) => o !== jar);
+        g.hud.toast('A mason jar with holes poked in the lid. Fireflies come out on warm nights.', 4500);
+      },
+    });
     const box = this.place('pizza_box', { x: run[2].position.x, y: top, z: N + 0.32, rotY: 0.2 });
     this.place('pizza', { x: run[2].position.x + 0.05, y: this.bounds(box).max.y, z: N + 0.3, rotY: 0.8 });
 
@@ -167,6 +186,7 @@ export class HouseScene extends BaseScene {
       this.fridgeInside.add(shelf);
     }
     this.root.add(this.fridgeInside);
+    this.#fridgePhotos(fb);
 
     // Contents (take-able while open).
     const pizza = this.place('pizza', { x: cx - 0.1, y: 0.97, z: front + 0.1, parent: this.fridgeInside });
@@ -199,6 +219,50 @@ export class HouseScene extends BaseScene {
       prompt: () => (this.fridgeOpen ? 'Close fridge' : 'Open fridge'),
       action: () => this.#toggleFridge(),
     });
+  }
+
+  /** Your newest Polaroids, stuck to the fridge door with magnets (swing with the door). */
+  #fridgePhotos(fb) {
+    const g = this.game;
+    const front = fb.max.z + 0.012;
+    const w = fb.max.x - fb.min.x;
+    const cx = (fb.min.x + fb.max.x) / 2;
+    const slots = [];
+    const loader = new THREE.TextureLoader();
+    const magnetCols = [0xff5a5a, 0xffd040, 0x5ab0ff, 0x6ad070, 0xff8ad0, 0xb08aff];
+    for (let i = 0; i < 6; i++) {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.24), this.mat({ color: 0xffffff }));
+      m.position.set(cx - w * 0.2 + col * w * 0.4 + (Math.random() - 0.5) * 0.04, 1.55 - row * 0.3, front);
+      m.rotation.z = (Math.random() - 0.5) * 0.25;
+      m.visible = false;
+      const mag = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.012, 8), this.mat({ color: magnetCols[i] }));
+      mag.rotation.x = Math.PI / 2;
+      mag.position.set(0, 0.1, 0.006);
+      m.add(mag);
+      this.root.add(m);
+      if (this.fridgeDoor) this.fridgeDoor.attach(m);
+      slots.push(m);
+    }
+    let shown = '';
+    const refresh = () => {
+      const photos = g.polaroid?.photos ?? [];
+      const key = photos.slice(0, 6).map((p) => p.t).join();
+      if (key === shown) return;
+      shown = key;
+      slots.forEach((m, i) => {
+        const p = photos[i];
+        m.visible = !!p;
+        if (!p) return;
+        loader.load(p.src, (t) => {
+          t.colorSpace = THREE.SRGBColorSpace;
+          m.material = this.mat({ map: t });
+        });
+      });
+    };
+    refresh();
+    this.updaters.push(refresh);
   }
 
   /** Net: someone else opened/closed the fridge. */
@@ -373,6 +437,7 @@ export class HouseScene extends BaseScene {
     this.tint(sofa, { carpet: 0x4a4258 });
     addSeat(this, sofa, { eye: [0.4, 1.02, 2.62], yaw: 0, pitch: -0.1, yawLimit: 1.4, standAt: [1.7, 0, 2.2] }, 'Sit on the couch');
     this.place('plant', { x: -0.9, z: 3.1 });
+    this.#coffeeTable();
 
     // Vase on the TV cabinet for flowers from the garden.
     const cb = this.bounds(cab);
@@ -419,14 +484,19 @@ export class HouseScene extends BaseScene {
     const loader = new THREE.TextureLoader();
     const frameMat = this.mat({ color: 0x2a2018 });
     const matBoard = this.mat({ color: 0xe8e2d4 });
-    // Two framed photos on the west wall, above the bed.
-    for (const [url, z, tilt] of [[selfieUrl, 1.75, 0.03], [togetherUrl, 2.85, -0.025]]) {
+    // Framed photos: two on the west wall above the bed, two on the east
+    // wall above the desk. [url, wall x, facing, z, height, tilt, w, h]
+    const photos = [
+      [selfieUrl, W + 0.03, Math.PI / 2, 1.75, 1.62, 0.03, 0.56, 0.42],
+      [togetherUrl, W + 0.03, Math.PI / 2, 2.85, 1.62, -0.025, 0.56, 0.42],
+      [dinerUrl, E - 0.03, -Math.PI / 2, -1.75, 1.72, -0.02, 0.52, 0.39],
+      [tableUrl, E - 0.03, -Math.PI / 2, -0.85, 1.74, 0.03, 0.33, 0.44],
+    ];
+    for (const [url, wx, facing, z, py, tilt, pw, ph] of photos) {
       const tex = loader.load(url);
       const group = new THREE.Group();
-      group.position.set(W + 0.03, 1.62, z);
-      group.rotation.set(0, Math.PI / 2, tilt);
-      const pw = 0.56;
-      const ph = 0.42;
+      group.position.set(wx, py, z);
+      group.rotation.set(0, facing, tilt);
       const back = new THREE.Mesh(new THREE.BoxGeometry(pw + 0.12, ph + 0.12, 0.03), frameMat);
       const mat = new THREE.Mesh(new THREE.PlaneGeometry(pw + 0.06, ph + 0.06), flat(matBoard, 1));
       mat.position.z = 0.03;
@@ -434,13 +504,13 @@ export class HouseScene extends BaseScene {
       pic.position.z = 0.045;
       group.add(back, mat, pic);
       this.root.add(group);
-      const centre = new THREE.Vector3(W + 0.05, 1.62, z);
+      const centre = new THREE.Vector3(wx + Math.sin(facing) * 0.02, py, z);
       this.addInteractable(back, {
         prompt: 'Look at the photo',
         range: 3,
         action: () =>
           g.enterFocus({
-            position: centre.clone().add(new THREE.Vector3(0.55, 0, 0)),
+            position: centre.clone().add(new THREE.Vector3(Math.sin(facing) * 0.55, 0, 0)),
             target: centre,
             fit: { w: pw + 0.14, h: ph + 0.14 },
             hint: 'E step back',
@@ -631,15 +701,16 @@ export class HouseScene extends BaseScene {
     this.addColliderFromObject(bed);
     this.tint(bed, { carpet: 0x3a4a6a, carpetWhite: 0xb8b4ac });
     this.addInteractable(bed, {
-      prompt: 'Try to sleep',
+      prompt: 'Go to sleep',
       action: async () => {
         g.fade.classList.add('on');
-        await new Promise((r) => setTimeout(r, 900));
-        g.dayNight.advance(180);
+        await new Promise((r) => setTimeout(r, 1400));
+        await g.changeScene('Dream', 'default');
         g.fade.classList.remove('on');
-        g.hud.toast(`You stare at the ceiling for three hours. It's ${g.dayNight.label}.`, 4000);
       },
     });
+
+    this.addSpawn('bed', [-1.6, 0, 2.3], -Math.PI / 2);
 
     const lamp = this.place('lamp_floor', { x: W + 0.35, z: 0.75 });
     const lb = this.bounds(lamp);
@@ -697,6 +768,100 @@ export class HouseScene extends BaseScene {
         rodVolume.removeFromParent();
         this.interactables = this.interactables.filter((o) => o !== rodVolume);
         g.hud.toast("Dad's old rod. The lake's at the end of the road.");
+      },
+    });
+  }
+
+  /** Coffee table between the couch and the TV: the quantum book, the Polaroid, and a box of leftover fireworks. */
+  #coffeeTable() {
+    const g = this.game;
+    const table = this.place('coffee_table', { x: 0.4, z: 1.45, collide: 0.05 });
+    const top = this.bounds(table).max.y;
+
+    // The book: a paperback with a printed cover (read it as crisp HTML text).
+    const cv = document.createElement('canvas');
+    cv.width = 128;
+    cv.height = 180;
+    const c = cv.getContext('2d');
+    const grd = c.createLinearGradient(0, 0, 0, 180);
+    grd.addColorStop(0, '#0d1a3a');
+    grd.addColorStop(1, '#1a0d2a');
+    c.fillStyle = grd;
+    c.fillRect(0, 0, 128, 180);
+    c.strokeStyle = '#e8c860';
+    c.lineWidth = 1.5;
+    for (let k = 0; k < 3; k++) {
+      c.beginPath();
+      c.ellipse(64, 92, 40, 14, (k * Math.PI) / 3, 0, Math.PI * 2);
+      c.stroke();
+    }
+    c.fillStyle = '#e8c860';
+    c.beginPath();
+    c.arc(64, 92, 5, 0, Math.PI * 2);
+    c.fill();
+    c.textAlign = 'center';
+    c.font = 'bold 19px Georgia, serif';
+    c.fillText('SMALL', 64, 30);
+    c.fillText('THINGS', 64, 50);
+    c.font = '9px Georgia, serif';
+    c.fillStyle = '#c8c8e0';
+    c.fillText('a guide to quantum mechanics', 64, 150);
+    const cover = new THREE.CanvasTexture(cv);
+    const paper = this.mat({ color: 0xe8e0c8 });
+    const coverMat = this.mat({ map: cover, affine: 0 });
+    const spine = this.mat({ color: 0x0d1a3a });
+    const book = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.03, 0.21), [paper, spine, coverMat, spine, paper, paper]);
+    book.position.set(0.15, top + 0.015, 1.45);
+    book.rotation.y = 0.35;
+    this.root.add(book);
+    // BoxGeometry +Y face shows the cover; rotate its UVs to read upright from the couch
+    cover.center.set(0.5, 0.5);
+    cover.rotation = Math.PI;
+    this.addInteractable(book, { prompt: 'Read “Small Things” (quantum mechanics)', action: () => g.openUI(() => g.book.show()) });
+
+    // The Polaroid + a film pack.
+    const cam = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.1, 0.13), this.mat({ color: 0xe8e4dc }));
+    body.position.y = 0.05;
+    const front = new THREE.Mesh(new THREE.BoxGeometry(0.122, 0.04, 0.06), this.mat({ color: 0x1a1a1e }));
+    front.position.set(0, 0.025, 0.04);
+    const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.03, 0.025, 12), this.mat({ color: 0x0a0a0c }));
+    lens.rotation.x = Math.PI / 2;
+    lens.position.set(0, 0.055, 0.075);
+    const stripes = [0xd02a2a, 0xf08020, 0xf0d020, 0x30a050, 0x2a60c0].map((col, k) => {
+      const st = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.06, 0.002), this.mat({ color: col, unlit: true }));
+      st.position.set(-0.016 + k * 0.008, 0.06, 0.066);
+      return st;
+    });
+    cam.add(body, front, lens, ...stripes);
+    cam.position.set(0.7, top, 1.35);
+    cam.rotation.y = Math.PI - 0.5; // lens toward the couch
+    this.root.add(cam);
+    const camVol = this.interactVolume(0.7, top + 0.06, 1.35, 0.25, 0.2, 0.25, {
+      prompt: 'Take the Polaroid camera',
+      action: () => {
+        g.inventory.add('polaroid');
+        g.inventory.add('polaroid_film', 2);
+        g.inventory.equip('polaroid');
+        cam.removeFromParent();
+        camVol.removeFromParent();
+        this.interactables = this.interactables.filter((o) => o !== camVol);
+        g.hud.toast('Polaroid + 2 packs of film (20 shots). LMB snap · Q film stock · RMB zoom · K album.', 6000);
+      },
+    });
+
+    // Box of leftover fireworks by the couch end.
+    const crate = this.box(0.42, 0.24, 0.32, this.mat({ map: signTexture(['BOOM', 'BOX'], { bg: '#b01818', fg: '#ffd040', w: 64, h: 40 }) }), 1.55, 0.12, 1.2, { collide: false });
+    crate.rotation.y = 0.3;
+    this.addInteractable(crate, {
+      prompt: 'Grab the leftover fireworks',
+      action: () => {
+        const inv = g.inventory;
+        for (const [id, n] of [['fw_sparkler', 4], ['fw_rocket', 3], ['fw_fountain', 1], ['fw_roman', 1], ['fw_willow', 1], ['fw_heart', 1]]) inv.add(id, n);
+        if (!inv.has('lighter')) inv.add('lighter');
+        crate.removeFromParent();
+        this.interactables = this.interactables.filter((o) => o !== crate);
+        g.hud.toast('Leftovers from last summer: sparklers, rockets, a fountain, a roman candle, a willow and a heart (+ a lighter). Use them outside.', 7000);
       },
     });
   }

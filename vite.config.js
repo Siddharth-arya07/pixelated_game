@@ -28,7 +28,7 @@ export default defineConfig({
   plugins: [serveUiIndex()],
   // Models/audio are imported through import.meta.glob, so they get hashed and
   // bundled like any other asset. These make sure Vite treats them as assets.
-  assetsInclude: ['**/*.glb', '**/*.gltf', '**/*.ogg', '**/*.wav', '**/*.mp3'],
+  assetsInclude: ['**/*.glb', '**/*.gltf', '**/*.ogg', '**/*.wav', '**/*.mp3', '**/*.m4a'],
   server: {
     port: 5173,
     open: false,

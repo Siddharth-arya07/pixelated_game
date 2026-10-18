@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { DinoGame } from '../minigames/DinoGame.js';
+import { TetrisApp, SnakeApp, PongApp, MinesApp, PokerApp } from '../minigames/Arcade.js';
 import { EMAILS } from './emails.js';
 
 /**
@@ -46,12 +47,22 @@ export class ComputerOS {
       videos: new VideoApp(this),
       music: new MusicApp(this),
       dino: new DinoApp(this),
+      tetris: new TetrisApp(this),
+      snake: new SnakeApp(this),
+      pong: new PongApp(this),
+      mines: new MinesApp(this),
+      poker: new PokerApp(this),
     };
     this.icons = [
       { app: 'mail', label: 'Mail', x: 10, y: 10 },
       { app: 'videos', label: 'Videos', x: 10, y: 52 },
       { app: 'music', label: 'Music', x: 10, y: 94 },
       { app: 'dino', label: 'DINO.EXE', x: 10, y: 136 },
+      { app: 'tetris', label: 'TETRIS', x: 58, y: 10 },
+      { app: 'snake', label: 'SNAKE', x: 58, y: 52 },
+      { app: 'pong', label: 'PONG', x: 58, y: 94 },
+      { app: 'mines', label: 'MINES', x: 58, y: 136 },
+      { app: 'poker', label: 'POKER', x: 106, y: 10 },
     ];
     this.draw();
   }
@@ -649,6 +660,48 @@ function drawIcon(c, kind, x, y) {
       c.fillRect(x + 10, y + 2, 2, 14);
       c.fillRect(x + 20, y + 0, 2, 14);
       c.fillRect(x + 10, y + 1, 12, 3);
+      break;
+    case 'poker':
+      c.fillStyle = '#f4f0e6';
+      c.fillRect(x + 2, y + 3, 11, 16);
+      c.fillRect(x + 9, y + 1, 11, 16);
+      c.fillStyle = '#c01818';
+      c.font = '10px monospace';
+      c.fillText('\u2665', x + 11, y + 12);
+      c.fillStyle = '#101010';
+      c.fillText('A', x + 3, y + 12);
+      break;
+    case 'tetris':
+      for (const [cx, cy, col] of [[0, 1, '#4ad8e8'], [1, 1, '#4ad8e8'], [2, 1, '#4ad8e8'], [1, 0, '#b060e0'], [3, 2, '#f0d040'], [3, 3, '#f0d040'], [2, 3, '#e05050'], [1, 3, '#e05050']]) {
+        c.fillStyle = col;
+        c.fillRect(x + 1 + cx * 5, y + 2 + cy * 5, 4, 4);
+      }
+      break;
+    case 'snake':
+      c.fillStyle = '#7ab848';
+      c.fillRect(x + 2, y + 14, 14, 3);
+      c.fillRect(x + 13, y + 6, 3, 9);
+      c.fillRect(x + 13, y + 6, 8, 3);
+      c.fillStyle = '#e05040';
+      c.fillRect(x + 4, y + 4, 3, 3);
+      break;
+    case 'pong':
+      c.fillStyle = '#101010';
+      c.fillRect(x, y + 2, 22, 18);
+      c.fillStyle = '#e8e8e8';
+      c.fillRect(x + 2, y + 6, 2, 8);
+      c.fillRect(x + 18, y + 9, 2, 8);
+      c.fillRect(x + 10, y + 10, 2, 2);
+      break;
+    case 'mines':
+      c.fillStyle = '#b8b8b8';
+      c.fillRect(x, y + 2, 22, 18);
+      c.fillStyle = '#101010';
+      c.beginPath();
+      c.arc(x + 11, y + 11, 5, 0, Math.PI * 2);
+      c.fill();
+      c.fillRect(x + 10, y + 3, 2, 16);
+      c.fillRect(x + 3, y + 10, 16, 2);
       break;
     case 'dino':
       c.fillStyle = '#e0e0e0';

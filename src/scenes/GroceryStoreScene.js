@@ -155,7 +155,8 @@ export class GroceryStoreScene extends BaseScene {
       const cb = this.bounds(cap);
       cap.position.z += z - cb.min.z;
       this.addColliderFromObject(cap);
-      this.addInteractable(cap, { prompt: a.label, action: () => g.openUI(() => g.shopping.open(a.catalog)) });
+      const capCat = a.catalog === 'outdoor' ? 'fireworks' : a.catalog;
+      this.addInteractable(cap, { prompt: capCat === 'fireworks' ? 'Browse fireworks & film' : a.label, action: () => g.openUI(() => g.shopping.open(capCat)) });
     }
   }
 

@@ -28,6 +28,14 @@ import { PaintUI } from '../ui/PaintUI.js';
 import { NoteUI } from '../ui/NoteUI.js';
 import { Stargazing } from '../systems/Stargazing.js';
 import { DinerScene } from '../scenes/DinerScene.js';
+import { StudioScene } from '../scenes/StudioScene.js';
+import { Instruments } from '../systems/Instruments.js';
+import { Fireworks } from '../systems/Fireworks.js';
+import { Meteors } from '../systems/Meteors.js';
+import { Fireflies } from '../systems/Fireflies.js';
+import { DreamScene } from '../scenes/DreamScene.js';
+import { Polaroid } from '../systems/Polaroid.js';
+import { BookUI } from '../ui/BookUI.js';
 import { CookingSystem } from '../systems/CookingSystem.js';
 import { Multiplayer } from '../net/Multiplayer.js';
 import { LobbyUI } from '../ui/LobbyUI.js';
@@ -126,6 +134,12 @@ export class Game {
     this.stargazing = new Stargazing(this);
     this.cooking = new CookingSystem(this);
     this.mp = new Multiplayer(this);
+    this.instruments = new Instruments(this);
+    this.fireworks = new Fireworks(this);
+    this.meteors = new Meteors(this);
+    this.fireflies = new Fireflies(this);
+    this.polaroid = new Polaroid(this);
+    this.book = new BookUI(this);
     this.weather = new WeatherSystem(this);
     this.hunger = new HungerSystem(this);
     this.touch = isTouchDevice() ? new TouchControls(this) : null;
@@ -136,6 +150,8 @@ export class Game {
       World: new WorldScene(this),
       Lighthouse: new LighthouseScene(this),
       Diner: new DinerScene(this),
+      Studio: new StudioScene(this),
+      Dream: new DreamScene(this),
     };
     // Vehicles start parked: truck + bike at the house, boat + jet ski at the pier.
     const world = this.scenes.World;
@@ -270,7 +286,7 @@ export class Game {
   }
 
   get uiOpen() {
-    return this.inventoryUI.visible || this.shopUI.visible || this.walkman?.visible || this.journal?.visible || this.paint?.visible || this.note?.visible;
+    return this.inventoryUI.visible || this.shopUI.visible || this.walkman?.visible || this.journal?.visible || this.paint?.visible || this.note?.visible || this.book?.visible || this.polaroid?.visible;
   }
 
   openUI(fn) {
@@ -284,6 +300,8 @@ export class Game {
     this.journal.hide();
     this.paint.hide();
     this.note.hide();
+    this.book.hide();
+    this.polaroid.hide();
     if (this.shopUI.visible) this.shopping.close();
     this.input.requestLock();
     // ESC doesn't count as a user gesture, so re-locking can fail → pause.
@@ -444,8 +462,9 @@ export class Game {
     this.dayNight.update(dt, scene);
     if (this.focus) {
       // Leaning into the laptop: only the focus target gets input.
-      if (input.pressed('KeyE') && !this.focus.leaving) {
-        input.consume('KeyE');
+      const exitKey = this.focus.exitKey ?? 'KeyE';
+      if (input.pressed(exitKey) && !this.focus.leaving) {
+        input.consume(exitKey);
         this.exitFocus();
       } else this.focus.onUpdate?.(dt, input);
       input.consumeMouseDelta();
@@ -462,6 +481,11 @@ export class Game {
       input.consumeMouseDelta();
     }
     this.inventory.update(dt);
+    this.book.update();
+    this.polaroid.update(dt);
+    this.fireworks.update(dt);
+    this.meteors.update(dt);
+    this.fireflies.update(dt);
     this.hunger.update(dt);
     this.stargazing.update(dt);
     this.mp.update(dt);
@@ -493,6 +517,8 @@ export class Game {
       this.hud.setSpeed(null);
       let hint = this.mp.ride ? `riding with ${this.mp.ride.veh.remoteName ?? 'them'} · MOUSE look · E hop off` : `WASD move · SHIFT run · E interact · I inventory${this.inventory.equipped === 'flashlight' ? ' · L flashlight' : ''}`;
       if (this.fishing.active) hint = 'LMB cast / reel · E or RMB stop fishing';
+      else if (this.inventory.equipped === 'jar') hint = `LMB catch a firefly (${this.fireflies.jar}/20 in the jar) · E interact · I inventory`;
+      else if (this.polaroid.equipped) hint = 'LMB take photo · Q / scroll film · RMB zoom · K album · E interact';
       else if (this.viewModel.smoking) hint = `HOLD LMB drag · R flick ash · G toss${this.player.seated ? ' · E stand' : ' · WASD move'}`;
       else if (this.player.seated) hint = 'MOUSE look · I inventory (smoke, drink) · E stand up';
       else if (this.hunting.equipped) hint = 'LMB fire · RMB aim · R reload · E interact · I inventory';
@@ -526,6 +552,14 @@ export class Game {
     else if (!this.mp.applyRideCamera(this.camera)) {
       this.player.applyCamera();
       if (!this.focus) this.hunting.applyCamera();
+      if (this.zoomFov && !this.focus) {
+        this.camera.fov += (this.zoomFov - this.camera.fov) * Math.min(1, this.dtLast * 10);
+        this.camera.updateProjectionMatrix();
+      } else if (this.zoomFov === null && !this.focus && !this.hunting.equipped && Math.abs(this.camera.fov - CONFIG.render.fov) > 0.05) {
+        this.camera.fov = CONFIG.render.fov;
+        this.camera.updateProjectionMatrix();
+        this.zoomFov = undefined;
+      }
     }
     // Drunk: the horizon rolls and drifts.
     const drunk = this.inventory.drunkFx ?? 0;
@@ -556,7 +590,9 @@ export class Game {
       this.camera.updateProjectionMatrix();
     }
     // Draw distance ends a bit past the fog wall (cheap culling on the big map).
-    const far = Math.max(40, this.renderer.shared.uFogFar.value + 18);
+    let far = Math.max(40, this.renderer.shared.uFogFar.value + 18);
+    // Sky shows (fireworks, shooting stars) live well past the fog wall.
+    if (this.fireworks.n || this.meteors.list.length || this.meteors.watching) far = Math.max(far, 420);
     if (Math.abs(this.camera.far - far) > 1) {
       this.camera.far = far;
       this.camera.updateProjectionMatrix();
@@ -564,7 +600,7 @@ export class Game {
     this.camera.updateMatrixWorld();
 
     // Lights: scene lights + vehicles + flashlight + ember
-    const lights = scene.lights.concat(this.vehicle.activeLights(scene), this.viewModel.lights, this.hunting.lights);
+    const lights = scene.lights.concat(this.vehicle.activeLights(scene), this.viewModel.lights, this.hunting.lights, this.fireworks.lights, this.polaroid.lights, this.fireflies.lights);
     if (this.flashlightOn && this.inventory.equipped === 'flashlight' && !this.vehicle.driving) {
       this.camera.getWorldDirection(_dir);
       _flash.position.copy(this.camera.position).addScaledVector(_dir, 2.5);
@@ -572,6 +608,12 @@ export class Game {
     }
     this.renderer.updateLights(lights, this.camera.position, this.time);
     this.renderer.render(scene.root, this.camera, this.time);
+    // Polaroid: grab the frame while the drawing buffer still holds it.
+    if (this.captureNext) {
+      const fn = this.captureNext;
+      this.captureNext = null;
+      fn(this.renderer.domElement);
+    }
   }
 }
 

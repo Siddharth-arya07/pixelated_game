@@ -76,7 +76,7 @@ export class Stargazing {
     } else if (this.scope) this.#leave();
 
     // Click to identify (anything outside at night; telescopes too).
-    const busy = g.uiOpen || g.focus || g.fishing.active || g.vehicle.active || g.hunting.equipped || g.viewModel.smoking;
+    const busy = g.uiOpen || g.focus || g.fishing.active || g.vehicle.active || g.hunting.equipped || g.viewModel.smoking || g.inventory.equipped === 'polaroid' || g.inventory.equipped === 'jar';
     if (!busy && scene.outdoor && g.input.locked && g.input.mousePressed(0) && !g.interaction.focus) {
       const dir = g.camera.getWorldDirection(_dir);
       const fovRad = (g.camera.fov * Math.PI) / 180;

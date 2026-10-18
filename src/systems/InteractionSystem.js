@@ -84,7 +84,7 @@ export class InteractionSystem {
     }
 
     // LMB also interacts, except while smoking (LMB = take a drag).
-    const click = !def.noClick && game.input.locked && game.input.mousePressed(0) && !game.viewModel.smoking && game.inventory.equipped !== 'shotgun';
+    const click = !def.noClick && game.input.locked && game.input.mousePressed(0) && !game.viewModel.smoking && game.inventory.equipped !== 'shotgun' && game.inventory.equipped !== 'polaroid' && game.inventory.equipped !== 'jar';
     if (game.input.pressed('KeyE') || click) {
       game.input.consume('KeyE');
       game.input.consumeMouse(0);
