@@ -3,3 +3,6 @@ dist
 .DS_Store
 .wrangler
 .partykit
+
+# personal photos (kept local, still bundled into the deployed site)
+src/assets/photos/
