@@ -30,7 +30,7 @@ export const MAP = {
     diner: { x: 196, z: 68, radius: 20 }, // Seaview Diner, north of the coast road
     drivein: { x: 110, z: 180, radius: 38 }, // Starlite Drive-In, south of the coast road
     playground: { x: -134, z: 250, radius: 14 }, // Pine Hollow Park, south of the town road
-    airfield: { x: 205, z: 238, radius: 72 }, // grass strip east of the drive-in (runway runs east–west)
+    airfield: { x: 212, z: 250, radius: 108 }, // grass strip east of the drive-in (runway runs east–west)
     mine: { x: -78, z: -52, radius: 14 }, // the old silver mine, cut into the foot of the mountain
   },
 

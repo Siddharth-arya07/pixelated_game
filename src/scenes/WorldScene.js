@@ -380,8 +380,8 @@ export class WorldScene extends BaseScene {
     const g = this.game;
     const A = this.poi.airfield;
     const y0 = A.y;
-    const L = 130;
-    const W = 16;
+    const L = 210;
+    const W = 18;
     const strip = new THREE.Mesh(new THREE.PlaneGeometry(L, W, 26, 4), this.mat({ map: this.tex('grass', 8, 1), color: 0xb8c890 }));
     strip.rotation.x = -Math.PI / 2;
     strip.position.set(A.x, y0 + 0.04, A.z);

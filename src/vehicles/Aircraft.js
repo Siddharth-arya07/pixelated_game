@@ -17,8 +17,8 @@ import { Vehicle } from './Vehicle.js';
  * [x, z] like every other vehicle, so remote planes bank and climb too.
  */
 const G = 9.8;
-const TAKEOFF = 24; // m/s: wings start carrying the weight
-const STALL = 17;
+const TAKEOFF = 19; // m/s: wings start carrying the weight
+const STALL = 13;
 const MAX_ALT = 420;
 
 export class Aircraft extends Vehicle {
@@ -89,7 +89,7 @@ export class Aircraft extends Vehicle {
     } else this.throttle = Math.max(0, this.throttle - dt * 0.3);
 
     // ---- airspeed ----------------------------------------------------------------
-    const thrust = this.throttle * 9;
+    const thrust = this.throttle * (this.onGround ? 11 : 9);
     const drag = 0.0042 * this.speed * this.speed + (this.onGround ? 0.6 + (brake ? 7 : 0) : 0.15);
     this.speed += (thrust - drag * Math.sign(this.speed || 1) - (this.onGround ? 0 : G * Math.sin(this.pitch))) * dt;
     if (this.onGround && this.speed < 0.05 && thrust === 0) this.speed = Math.max(0, this.speed);
@@ -101,9 +101,13 @@ export class Aircraft extends Vehicle {
       // taxi: steer with the tail wheel, lift the nose once there's airspeed
       this.heading += rollIn * -0.9 * dt * THREE.MathUtils.clamp(this.speed / 8, -1, 1);
       this.roll = THREE.MathUtils.damp(this.roll, 0, 6, dt);
-      const maxNose = lift > 0.7 ? 0.35 : 0;
-      this.pitch = THREE.MathUtils.clamp(this.pitch + pitchIn * 0.8 * dt, 0, maxNose);
-      if (lift >= 1 && this.pitch > 0.08) this.onGround = false; // rotate → airborne
+      const maxNose = lift > 0.5 ? 0.35 : 0;
+      this.pitch = THREE.MathUtils.clamp(this.pitch + pitchIn * 1.2 * dt, 0, maxNose);
+      // rotate → airborne (she lifts off by herself at full speed, or sooner if you pull back)
+      if (lift >= 1 && (this.pitch > 0.05 || this.speed > TAKEOFF + 6)) {
+        this.onGround = false;
+        this.pitch = Math.max(this.pitch, 0.12);
+      }
     } else {
       const auth = 0.35 + 0.65 * lift;
       this.pitch += pitchIn * 0.55 * auth * dt;
