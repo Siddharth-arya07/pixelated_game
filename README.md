@@ -29,7 +29,7 @@ Touch controls switch on automatically. Play in landscape.
 
 ### Deploy (Cloudflare Pages)
 
-`npm run site:deploy` builds and publishes to https://three-am-nostalgia.pages.dev. The site is behind a password (any username) set with `npx wrangler pages secret put SITE_PASSWORD --project-name three-am-nostalgia`; multiplayer connects through the site (`/parties/*` → the rooms worker, which has no public URL of its own). See `cloudflare/pages/`.
+`npm run site:deploy` builds and publishes to https://three-am-nostalgia.pages.dev. The site is public; multiplayer connects through the site (`/parties/*` → the rooms worker, which has no public URL of its own). See `cloudflare/pages/`.
 
 ### Deploy (Netlify, old)
 

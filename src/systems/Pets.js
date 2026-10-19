@@ -17,7 +17,7 @@ import * as THREE from 'three';
  * a stray any more in your world either.
  */
 const STRAYS = [
-  { sid: 'shiba', model: 'dog_shiba', kind: 'dog', label: 'shiba inu', home: [-208, 152] },
+  { sid: 'shiba', model: 'dog_shiba', kind: 'dog', label: 'shiba inu', home: [-184, 182] }, // front yard, by the porch
   { sid: 'husky', model: 'dog_husky', kind: 'dog', label: 'husky', home: [316, 42] },
   { sid: 'cat_diner', model: 'cat', kind: 'cat', label: 'ginger cat', home: [184, 80] },
   { sid: 'cat_light', model: 'cat', kind: 'cat', label: 'scruffy cat', home: [398, -44] },
@@ -117,6 +117,12 @@ export class Pets {
       }
       a.obj.userData.interact = this.#interactDef(a);
     }
+    // a dented food bowl where the shiba hangs out, under the porch light
+    const sh = this.strays.get('shiba');
+    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.12, 0.07, 10), world.mat({ color: 0xb03030 }));
+    bowl.position.copy(sh.home).add(new THREE.Vector3(0.6, 0.035, 0.3));
+    world.root.add(bowl);
+    world.addLight({ position: [sh.home.x, sh.home.y + 2.2, sh.home.z], color: 0xffd8a0, range: 7, intensity: 0.9 });
   }
 
   #ui() {
@@ -318,6 +324,12 @@ export class Pets {
     const g = this.game;
     const feet = g.player.feet;
     const dp = Math.hypot(feet.x - a.pos.x, feet.z - a.pos.z);
+    // first time you're near: it makes itself known
+    if (dp < 14 && !a.noticed) {
+      a.noticed = true;
+      this.#voice(a, a.def.kind === 'dog' ? 1.2 : 1);
+      this.game.hud.toast(a.def.kind === 'dog' ? `A ${a.def.label} trots over, tail going. Looks hungry.` : `A ${a.def.label} watches you from a safe distance.`, 3500);
+    }
     const running = Math.hypot(g.player.velocity.x, g.player.velocity.z) > 5;
     a.t -= dt;
     if (a.def.kind === 'cat' && dp < 2.4 - a.trust * 0.5 && a.trust < NEED) {
