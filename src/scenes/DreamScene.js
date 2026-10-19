@@ -647,6 +647,35 @@ export class DreamScene extends BaseScene {
 
   onEnter() {
     const g = this.game;
+    // camping dream: night-blue sky, a ring of giant glowing fireflies, the moon close enough to touch
+    const camp = !!g.dreamWake;
+    this.indoor.fog = camp ? 0x1a2050 : this.pal.fog;
+    this.indoor.ambient = camp ? 0x8a90c8 : 0xe8dcf0;
+    if (camp && !this.campFx) {
+      this.campFx = new THREE.Group();
+      const glow = [0xfff07a, 0xa0ffb0, 0xffc0e0];
+      for (let k = 0; k < 40; k++) {
+        const b = new THREE.Mesh(new THREE.SphereGeometry(0.25 + Math.random() * 0.25, 8, 6), this.mat({ color: glow[k % 3], unlit: true }));
+        b.userData.ph = Math.random() * 6;
+        b.userData.r = 8 + Math.random() * 30;
+        this.campFx.add(b);
+      }
+      const bigMoon = new THREE.Mesh(new THREE.CircleGeometry(14, 32), this.mat({ color: 0xfff8d8, unlit: true, fog: false }));
+      bigMoon.position.set(20, 30, -70);
+      bigMoon.lookAt(0, 0, 0);
+      this.campFx.add(bigMoon);
+      this.root.add(this.campFx);
+      this.updaters.push((dt, t) => {
+        if (!this.campFx.visible) return;
+        this.campFx.children.forEach((b, i) => {
+          if (!b.userData.r) return;
+          const a = t * 0.1 + b.userData.ph;
+          b.position.set(Math.cos(a + i) * b.userData.r, 2 + Math.sin(t * 0.7 + b.userData.ph) * 2 + (i % 5), Math.sin(a + i) * b.userData.r);
+        });
+      });
+    }
+    if (this.campFx) this.campFx.visible = camp;
+    if (camp) setTimeout(() => g.hud.toast('You fell asleep to the sound of the fire. The dream smells like pine and marshmallow.', 5000), 800);
     this.found = 0;
     for (const s of this.stars) s.visible = true;
     this.waking = false;
@@ -745,6 +774,15 @@ export class DreamScene extends BaseScene {
     const g = this.game;
     g.fade.classList.add('on');
     await new Promise((r) => setTimeout(r, 1200));
+    const camp = g.dreamWake;
+    g.dreamWake = null;
+    if (camp) {
+      g.dayNight.minutes = 390; // 6:30 a.m.
+      await g.changeScene('World', camp);
+      g.fade.classList.remove('on');
+      g.camping?.morning();
+      return;
+    }
     g.dayNight.advance(240);
     await g.changeScene('House', 'bed');
     g.fade.classList.remove('on');

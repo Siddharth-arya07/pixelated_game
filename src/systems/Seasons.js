@@ -47,6 +47,7 @@ export class Seasons {
   }
 
   get index() {
+    if (this.game.holidays?.current === 'christmas') return 0; // always a white Christmas
     const day = this.game.dayNight.day;
     return (this.base + Math.floor((day - 1) / 2)) % 4;
   }

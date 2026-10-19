@@ -8,6 +8,8 @@ import { buildDriveIn } from './DriveIn.js';
 import { buildWishingWell } from './WishingWell.js';
 import { buildBonfire } from './Bonfire.js';
 import { buildBackyard } from './Backyard.js';
+import { buildFunland } from './Funland.js';
+import { buildTreehouse } from './Treehouse.js';
 import { BaseScene } from './BaseScene.js';
 import { Terrain } from '../world/Terrain.js';
 import { MAP } from '../world/MapLayout.js';
@@ -77,6 +79,9 @@ export class WorldScene extends BaseScene {
     this.#mineEntrance();
     this.bonfire = buildBonfire(this);
     this.backyard = buildBackyard(this);
+    this.funland = buildFunland(this);
+    this.treehouse = buildTreehouse(this);
+    this.#bowlingAlley();
     this.#nature();
     this.#bounds();
     console.info(`[World] built in ${(performance.now() - t0).toFixed(0)} ms`);
@@ -494,6 +499,23 @@ export class WorldScene extends BaseScene {
     });
     this.addSpawn('mine_door', [x, y, z + 3], Math.PI);
     this.#sign(['OLD MINE', 'TOURS: NEVER', 'ASSAY OFFICE: OPEN'], x + 6, z + 8, 0, { bg: '#4a3420' });
+  }
+
+  /** Stardust Lanes: a flat-roofed box with a neon sign, door facing the road (north). */
+  #bowlingAlley() {
+    const g = this.game;
+    const B = this.poi.bowling;
+    const y = B.y;
+    this.box(16, 5, 11, this.mat({ map: this.tex('siding', 5, 2), color: 0x6a5a7a }), B.x, y + 2.5, B.z + 1);
+    const neon = new THREE.Mesh(new THREE.PlaneGeometry(7, 1.4), this.mat({ map: signTexture(['★ STARDUST LANES ★'], { bg: '#1a0a2a', fg: '#ff60d0', w: 256, h: 48 }), unlit: true }));
+    neon.position.set(B.x, y + 5.6, B.z - 4.55);
+    neon.rotation.y = Math.PI;
+    this.root.add(neon);
+    this.box(7.2, 1.6, 0.1, this.mat({ color: 0x2a1a3a }), B.x, y + 5.6, B.z - 4.5, { collide: false });
+    this.addLight({ position: [B.x, y + 4, B.z - 6.5], color: 0xff60d0, range: 12, intensity: 1.2, flicker: 0.05 });
+    const door = this.box(1.4, 2.3, 0.08, this.mat({ color: 0x3a1a3a }), B.x + 2.5, y + 1.15, B.z - 4.54, { collide: false });
+    this.addInteractable(door, { prompt: 'Go into Stardust Lanes (bowling)', action: () => g.changeScene('Bowling', 'door') });
+    this.addSpawn('bowling_door', [B.x + 2.5, y, B.z - 6.5], 0);
   }
 
   /** The music shed beside the house (inside: StudioScene). Door faces south. */

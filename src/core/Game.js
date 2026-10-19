@@ -44,6 +44,11 @@ import { Seasons } from '../systems/Seasons.js';
 import { Radio } from '../systems/Radio.js';
 import { PlaneFX } from '../vehicles/PlaneFX.js';
 import { Balloon } from '../systems/Balloon.js';
+import { BowlingScene } from '../scenes/BowlingScene.js';
+import { Camping } from '../systems/Camping.js';
+import { Phone } from '../ui/Phone.js';
+import { Holidays } from '../systems/Holidays.js';
+import { TextPrompt } from '../ui/TextPrompt.js';
 import { Polaroid } from '../systems/Polaroid.js';
 import { BookUI } from '../ui/BookUI.js';
 import { CookingSystem } from '../systems/CookingSystem.js';
@@ -157,6 +162,10 @@ export class Game {
     this.radio = new Radio(this);
     this.planeFX = new PlaneFX(this);
     this.balloon = new Balloon(this);
+    this.camping = new Camping(this);
+    this.phone = new Phone(this);
+    this.holidays = new Holidays(this);
+    this.prompt = new TextPrompt(this);
     this.polaroid = new Polaroid(this);
     this.book = new BookUI(this);
     this.weather = new WeatherSystem(this);
@@ -172,6 +181,7 @@ export class Game {
       Studio: new StudioScene(this),
       Dream: new DreamScene(this),
       Cave: new CaveScene(this),
+      Bowling: new BowlingScene(this),
     };
     // Vehicles start parked: truck + bike at the house, boat + jet ski at the pier.
     const world = this.scenes.World;
@@ -311,7 +321,7 @@ export class Game {
   }
 
   get uiOpen() {
-    return this.inventoryUI.visible || this.shopUI.visible || this.walkman?.visible || this.journal?.visible || this.paint?.visible || this.note?.visible || this.book?.visible || this.polaroid?.visible || this.pets?.visible || this.rayUI?.visible || this.planeFX?.visible;
+    return this.inventoryUI.visible || this.shopUI.visible || this.walkman?.visible || this.journal?.visible || this.paint?.visible || this.note?.visible || this.book?.visible || this.polaroid?.visible || this.pets?.visible || this.rayUI?.visible || this.planeFX?.visible || this.phone?.visible || this.prompt?.visible;
   }
 
   openUI(fn) {
@@ -329,6 +339,8 @@ export class Game {
     this.pets.hide();
     this.rayUI.hide();
     this.planeFX.hide();
+    this.phone.hide();
+    this.prompt.hide();
     this.polaroid.hide();
     if (this.shopUI.visible) this.shopping.close();
     this.input.requestLock();
@@ -523,6 +535,9 @@ export class Game {
     this.radio.update(dt);
     this.planeFX.update(dt);
     this.balloon.update(dt);
+    this.camping.update(dt);
+    this.phone.update(dt);
+    this.holidays.update(dt);
     this.hunger.update(dt);
     this.stargazing.update(dt);
     this.mp.update(dt);
@@ -554,7 +569,7 @@ export class Game {
       );
     } else {
       this.hud.setSpeed(null);
-      let hint = this.mp.ride ? `riding with ${this.mp.ride.veh.remoteName ?? 'them'} · MOUSE look · E hop off` : `WASD move · SHIFT run · E interact · I inventory${this.inventory.equipped === 'flashlight' ? ' · L flashlight' : ''}`;
+      let hint = this.mp.ride ? `riding with ${this.mp.ride.veh.remoteName ?? 'them'} · MOUSE look · E hop off` : `WASD move · SHIFT run · E interact · I inventory · O phone${this.inventory.equipped === 'flashlight' ? ' · L flashlight' : ''}`;
       if (this.fishing.active) hint = 'LMB cast / reel · E or RMB stop fishing';
       else if (this.seasons.mode === 'skate') hint = 'W push · A/D turn · SPACE brake · MOUSE look · E step off the ice';
       else if (this.seasons.mode === 'sled') hint = 'A/D steer · S drag your feet · MOUSE look · E get off';

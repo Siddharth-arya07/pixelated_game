@@ -86,6 +86,14 @@ export const ITEMS = {
   gift_cap: { name: 'Bottle Cap', desc: 'Shiny. Clearly priceless, to a cat.', color: '#c8a040' },
   gift_coin: { name: 'Old Coin', desc: 'A 1962 quarter. Sells for a bit.', color: '#b0b0b0', value: 3, catch: true },
   gift_ring: { name: 'Silver Ring', desc: 'Where did the cat even FIND this? Worth something.', color: '#e0e4ec', value: 40, catch: true },
+  tent: { name: 'Tent', desc: 'A two-person dome tent. Use it outside to pitch camp (with a little fire).', color: '#d06a2a', use: 'tent' },
+  fuse: { name: 'Fuse', desc: 'A chunky old 30-amp fuse. For a generator, maybe.', color: '#c8c8a0' },
+  grease: { name: 'Gear Grease', desc: 'A tin of thick black grease. For something big and squeaky.', color: '#2a2a2a' },
+  planks: { name: 'Planks', desc: 'Lumber for the treehouse in the woods behind your house.', color: '#b08a5a' },
+  plank_bundle: { name: 'Bundle of Planks', desc: '10 planks, tied with string.', color: '#b08a5a' },
+  candy_corn: { name: 'Candy Corn', desc: 'From a neighbour. Love it or hate it.', color: '#f0a020', use: 'eatCandy', food: 6 },
+  caramel_apple: { name: 'Caramel Apple', desc: 'Homemade. Sticky. Perfect.', color: '#c08030', use: 'eatCandy', food: 18 },
+  ugly_sweater: { name: 'Reindeer Sweater', desc: 'Hand-knitted. Hideous. Warm. Yours.', color: '#c02a2a' },
   jar: { name: 'Mason Jar', desc: 'Equip it outside on a warm night: LMB catches fireflies. A full jar is a lantern.', color: '#b8d8c8', equip: true },
   polaroid: { name: 'Polaroid OneStep', desc: 'Instant camera. Equip: LMB snap · Q/scroll film stock · RMB zoom · K album. Needs instant film.', color: '#e8e4dc', equip: true },
   polaroid_film: { name: 'Instant Film', desc: 'A pack of 10 instant photos.', color: '#2a2a30' },
@@ -109,6 +117,14 @@ export const ITEMS = {
   fish_trout: { name: 'Rainbow Trout', desc: 'Pretty. Tastes good.', color: '#c08090', value: 8, catch: true },
   fish_catfish: { name: 'Channel Catfish', desc: 'Whiskers. Heavy.', color: '#605848', value: 14, catch: true },
   fish_pike: { name: 'Northern Pike', desc: 'All teeth. Rare at night.', color: '#5a6a3a', value: 22, catch: true },
+  fish_goldcarp: { name: 'Golden Carp', desc: 'Rare. Glints like a coin in the lake.', color: '#f0b030', value: 35, catch: true },
+  fish_ghostpike: { name: 'Ghost Pike', desc: 'Rare, night only. Pale as moonlight.', color: '#d0e0e8', value: 48, catch: true },
+  fish_mackerel: { name: 'Mackerel', desc: 'Stripy and fast.', color: '#4a7a9a', value: 5, catch: true },
+  fish_seabass: { name: 'Sea Bass', desc: 'A fine fish.', color: '#6a7a8a', value: 11, catch: true },
+  fish_cod: { name: 'Cod', desc: 'Chunky.', color: '#8a8a6a', value: 13, catch: true },
+  fish_squid: { name: 'Squid', desc: 'Comes up at night. Inky.', color: '#c08a9a', value: 10, catch: true },
+  fish_moonfish: { name: 'Moonfish', desc: 'Rare, night only. Faintly glows.', color: '#c8d8ff', value: 60, catch: true },
+  fish_leviathan: { name: 'Lighthouse Leviathan', desc: 'LEGENDARY. Only from the boat, far out. Ray says it’s a myth.', color: '#2a4a5a', value: 500, catch: true },
   old_boot: { name: 'Old Boot', desc: 'Size 11. Soaked.', color: '#3a2a1a', value: 0, catch: true },
 };
 
@@ -208,6 +224,10 @@ export class InventorySystem {
       return false;
     }
     if (def.use === 'firework') return g.fireworks.use(id);
+    if (def.use === 'tent') {
+      g.camping.pitch();
+      return false;
+    }
     if (def.use === 'sled') {
       g.closeUI();
       g.seasons.useSled();

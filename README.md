@@ -212,6 +212,14 @@ E gets up.
 - **Backyard patio** beside the house: arcade cabinets, beer pong, darts, the chug-off, free cooler, a shared Hall of Fame.
 - **Balloon rides** at dawn (5–8 a.m.) from the east end of the airfield; friends can ride in the same basket.
 
+- **Stardust Lanes** (bowling, just off the town road): 5 frames on lane 1 — A/D aim, Z/C hook, hold SPACE. Scores go on the patio Hall of Fame.
+- **Camping**: buy a tent (Quik Mart), use it outside; sleep in it for a starry dream and a misty dawn.
+- **Funland** (west of town): fix the generator (fuse from the register, grease from the outdoor aisle, pull the cord 3×) and ride the Ferris wheel.
+- **Treehouse** behind your house: build it in 6 stages with planks (lumber pile, or bundles from the Quik Mart); leave notes on the corkboard (Q).
+- **Fishing**: sea fish off the beach/pier, night-only and rare fish, C to fish from the stopped boat (the Lighthouse Leviathan lives out there), and a fish tank at home.
+- **Phone (O)**: text friends, call Ray or Dolores (pizza delivery), weather, moon phase, calendar (preview holidays), pets.
+- **Holidays** by the real date: Halloween (pumpkins, trick-or-treat at the neighbours), Christmas (lights, tree, presents, white Christmas), New Year's Eve (midnight fireworks over the harbor).
+
 ## The map
 
 1 km², always foggy:

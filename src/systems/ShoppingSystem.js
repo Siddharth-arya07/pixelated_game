@@ -41,6 +41,9 @@ export const CATALOGS = {
       { id: 'fishing_rod', price: 24.99, unique: true },
       { id: 'bait', price: 3.99 },
       { id: 'jar', price: 1.49, unique: true },
+      { id: 'tent', price: 19.99, unique: true },
+      { id: 'plank_bundle', price: 9, gives: { id: 'planks', n: 10 } },
+      { id: 'grease', price: 6, unique: true },
       { id: 'flashlight', price: 7.99, unique: true },
       { id: 'shells', price: 1.25 },
       { id: 'seeds_poppy', price: 1.99 },
@@ -107,6 +110,7 @@ export const CATALOGS = {
       { id: 'cigarettes', price: 8.99 },
       { id: 'lighter', price: 0.99 },
       { id: 'hot_pizza', price: 3.5 },
+      { id: 'fuse', price: 4, unique: true },
     ],
     buysCatch: true, // the clerk will take fish off your hands
   },
@@ -140,7 +144,8 @@ export class ShoppingSystem {
     const ok = this.canBuy(entry);
     if (ok !== true) return ok;
     inv.spend(entry.price);
-    inv.add(entry.id);
+    if (entry.gives) inv.add(entry.gives.id, entry.gives.n);
+    else inv.add(entry.id);
     this.game.audio.oneShot('register', { volume: 0.6 });
     return `Bought ${ITEMS[entry.id].name}.`;
   }

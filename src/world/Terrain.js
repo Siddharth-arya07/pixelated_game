@@ -95,6 +95,8 @@ export class Terrain {
     P('playground', this.baseHeight(poi.playground.x, poi.playground.z), poi.playground.radius, 12);
     P('lighthouse', 16, poi.lighthouse.radius, 9); // short falloff = cliffs
     P('airfield', this.baseHeight(poi.airfield.x, poi.airfield.z), poi.airfield.radius, 30);
+    P('funland', this.baseHeight(poi.funland.x, poi.funland.z), poi.funland.radius, 18);
+    P('bowling', this.baseHeight(poi.bowling.x, poi.bowling.z), poi.bowling.radius, 10);
     P('mine', this.baseHeight(poi.mine.x, poi.mine.z + 10), poi.mine.radius, 10);
     this.poi.junction = { ...poi.junction, y: 0 };
     this.poi.lakeExit = { ...poi.lakeExit, y: 0 };

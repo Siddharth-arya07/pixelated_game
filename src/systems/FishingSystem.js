@@ -23,6 +23,18 @@ const SPECIES = [
   { id: 'fish_bass', lb: [1.5, 6], strength: 0.55, far: 0.4, weight: 0.2 },
   { id: 'fish_catfish', lb: [3, 15], strength: 0.75, far: 0.6, weight: 0.1 },
   { id: 'fish_pike', lb: [4, 18], strength: 0.9, far: 0.8, weight: 0.05 },
+  { id: 'fish_goldcarp', lb: [2, 6], strength: 0.5, far: 0.5, weight: 0.012 },
+  { id: 'fish_ghostpike', lb: [6, 20], strength: 0.95, far: 0.8, weight: 0.02, night: true },
+];
+// the sea (off the beach, the pier, or out in the boat)
+const SEA = [
+  { id: 'old_boot', lb: [1, 2], strength: 0.05, far: 0, weight: 0.05 },
+  { id: 'fish_mackerel', lb: [0.5, 2], strength: 0.35, far: 0, weight: 0.32 },
+  { id: 'fish_seabass', lb: [2, 8], strength: 0.6, far: 0.3, weight: 0.22 },
+  { id: 'fish_cod', lb: [3, 12], strength: 0.7, far: 0.5, weight: 0.16 },
+  { id: 'fish_squid', lb: [1, 5], strength: 0.5, far: 0.3, weight: 0.12, night: true },
+  { id: 'fish_moonfish', lb: [4, 9], strength: 0.8, far: 0.6, weight: 0.025, night: true },
+  { id: 'fish_leviathan', lb: [180, 420], strength: 1, far: 0.9, weight: 0.006, boat: true },
 ];
 
 export class FishingSystem {
@@ -120,8 +132,24 @@ export class FishingSystem {
     // Sea or lake: the bobber rides whatever surface is under it.
     const wh = this.bobber.visible ? g.scene?.waterHeight?.(this.bobber.position.x, this.bobber.position.z) : null;
     if (wh !== null && wh !== undefined) this.waterY = wh;
-    this.rodView.visible = equipped;
-    if (!this.active) return;
+    const boat = g.vehicles.active?.kind === 'water' ? g.vehicles.active : null;
+    this.rodView.visible = equipped || (this.fromBoat && g.inventory.equipped === 'fishing_rod');
+    if (boat && !this.active && g.input.pressed('KeyC')) {
+      if (!g.inventory.has('fishing_rod')) g.hud.toast('No rod on board.');
+      else if (Math.abs(boat.speed) > 0.8) g.hud.toast('Stop the boat first.');
+      else {
+        if (g.inventory.equipped !== 'fishing_rod') g.inventory.equip('fishing_rod');
+        this.fromBoat = boat;
+        this.state = 'ready';
+        this.game.fishingUI.show();
+        this.#status('Hold LEFT MOUSE to cast (from the boat: deep water, big fish) · RMB stop');
+      }
+    }
+    if (this.fromBoat && (!boat || Math.abs(boat.speed) > 1.5) && this.active) this.cancel('You’re moving — reeled in.');
+    if (!this.active) {
+      this.fromBoat = null;
+      return;
+    }
 
     const input = g.input;
     if (input.pressed('KeyE') || input.mousePressed(2)) {
@@ -271,12 +299,19 @@ export class FishingSystem {
     if (g.inventory.has('bait') && f.id !== 'old_boot') g.inventory.remove('bait');
     g.audio.oneShot('splash', { volume: 0.6 });
     this.cancel(null);
-    g.hud.toast(f.id === 'old_boot' ? 'You caught... an old boot.' : `Caught a ${def.name}! ${f.weight.toFixed(1)} lb`);
+    const rare = ['fish_goldcarp', 'fish_ghostpike', 'fish_moonfish', 'fish_leviathan'].includes(f.id);
+    g.hud.toast(f.id === 'old_boot' ? 'You caught... an old boot.' : f.id === 'fish_leviathan' ? `THE LIGHTHOUSE LEVIATHAN. ${Math.round(f.weight)} lb. Ray is never going to believe this.` : `${rare ? 'RARE! ' : ''}Caught a ${def.name}! ${f.weight.toFixed(1)} lb${rare ? ' — put it in your tank at home.' : ''}`, rare ? 6000 : 2800);
+    if (rare) g.net?.online && g.net.event('emote', { a: 'wave' });
   }
 
   #rollFish() {
     // Long casts reach the deep water where the big ones are.
-    const pool = SPECIES.map((s) => ({ s, w: s.weight * (this.power >= s.far ? 1 : 0.15) }));
+    const g = this.game;
+    const night = !g.dayNight.isDaylight;
+    const table = g.scene?.name === 'World' ? SEA : SPECIES;
+    const pool = table
+      .filter((s) => (!s.night || night) && (!s.boat || this.fromBoat))
+      .map((s) => ({ s, w: s.weight * (this.power >= s.far ? 1 : 0.15) * (s.night ? 2 : 1) * (this.fromBoat && s.far > 0.4 ? 1.6 : 1) }));
     let r = Math.random() * pool.reduce((a, p) => a + p.w, 0);
     for (const p of pool) {
       if ((r -= p.w) <= 0) {

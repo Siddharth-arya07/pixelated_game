@@ -8,7 +8,7 @@ import { MAP } from '../world/MapLayout.js';
  * draw it plus a "you are here" arrow. Indoors the arrow sits on the
  * building you're in. The game keeps running while the map is open.
  */
-const INDOOR = { House: 'house', GroceryStore: 'gasStation', Lighthouse: 'lighthouse', Lake: 'lakeExit', Diner: 'diner', Studio: 'house', Cave: 'mine' };
+const INDOOR = { House: 'house', GroceryStore: 'gasStation', Lighthouse: 'lighthouse', Lake: 'lakeExit', Diner: 'diner', Studio: 'house', Cave: 'mine', Bowling: 'bowling' };
 const LABELS = [
   ['house', 'HOME'],
   ['gasStation', 'QUIK MART'],
@@ -20,6 +20,8 @@ const LABELS = [
   ['diner', 'DINER'],
   ['airfield', 'AIRFIELD'],
   ['mine', 'OLD MINE'],
+  ['funland', 'FUNLAND'],
+  ['bowling', 'BOWLING'],
 ];
 
 export class MapUI {

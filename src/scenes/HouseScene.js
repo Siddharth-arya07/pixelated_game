@@ -440,6 +440,7 @@ export class HouseScene extends BaseScene {
     this.place('plant', { x: -0.9, z: 3.1 });
     this.#coffeeTable();
     this.#fossilCabinet();
+    this.#fishTank();
 
     // Vase on the TV cabinet for flowers from the garden.
     const cb = this.bounds(cab);
@@ -772,6 +773,92 @@ export class HouseScene extends BaseScene {
         g.hud.toast("Dad's old rod. The lake's at the end of the road.");
       },
     });
+  }
+
+  /** An aquarium for your best catches: they swim around in it (up to 8). */
+  #fishTank() {
+    const g = this.game;
+    const x = W + 0.45;
+    const z = -2.35;
+    const KEY = '3am-tank';
+    this.box(0.6, 0.75, 1.15, this.mat({ color: 0x2a2018 }), x, 0.375, z);
+    const top = 0.75;
+    const water = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 1.05), this.mat({ color: 0x3a8ab8, opacity: 0.35, unlit: true }));
+    water.position.set(x, top + 0.27, z);
+    this.root.add(water);
+    const gravel = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 1.05), this.mat({ color: 0xc8b088 }));
+    gravel.position.set(x, top + 0.04, z);
+    this.root.add(gravel);
+    for (let k = 0; k < 4; k++) {
+      const weed = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.3, 4), this.mat({ color: 0x3a9a5a }));
+      weed.position.set(x - 0.15 + (k % 2) * 0.3, top + 0.2, z - 0.4 + k * 0.25);
+      this.root.add(weed);
+    }
+    this.addLight({ position: [x + 0.3, top + 0.4, z], color: 0x80c8ff, range: 2.5, intensity: 0.7 });
+    const fishGrp = new THREE.Group();
+    this.root.add(fishGrp);
+    const load = () => {
+      try {
+        return JSON.parse(localStorage.getItem(KEY) ?? '[]');
+      } catch {
+        return [];
+      }
+    };
+    const swimmers = [];
+    const refresh = () => {
+      fishGrp.clear();
+      swimmers.length = 0;
+      load().forEach((id, i) => {
+        const def = g.inventory.def(id);
+        if (!def) return;
+        const big = id === 'fish_leviathan';
+        const col = parseInt(def.color.slice(1), 16);
+        const glow = ['fish_moonfish', 'fish_ghostpike', 'fish_goldcarp'].includes(id);
+        const f = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.SphereGeometry(big ? 0.09 : 0.05, 8, 6), this.mat({ color: col, unlit: glow }));
+        body.scale.set(0.5, 0.7, 1.4);
+        const tail = new THREE.Mesh(new THREE.ConeGeometry(big ? 0.05 : 0.03, 0.06, 4), this.mat({ color: col, unlit: glow }));
+        tail.rotation.x = -Math.PI / 2;
+        tail.position.z = big ? -0.15 : -0.08;
+        f.add(body, tail);
+        fishGrp.add(f);
+        swimmers.push({ f, ph: i * 1.7, sp: 0.4 + (i % 3) * 0.15, y: top + 0.12 + (i % 4) * 0.08 });
+      });
+    };
+    refresh();
+    this.updaters.push((dt, t) => {
+      for (const s of swimmers) {
+        const a = t * s.sp + s.ph;
+        s.f.position.set(x + Math.sin(a * 1.7) * 0.14, s.y + Math.sin(a * 2.3) * 0.03, z + Math.sin(a) * 0.4);
+        s.f.rotation.y = Math.cos(a) > 0 ? 0 : Math.PI;
+      }
+    });
+    this.addInteractable(water, {
+      prompt: () => {
+        const best = this.#bestFish();
+        return best ? `Put your ${g.inventory.def(best).name} in the tank` : `Fish tank (${load().length}/8)`;
+      },
+      range: 2.2,
+      action: () => {
+        const best = this.#bestFish();
+        const list = load();
+        if (!best) return g.hud.toast(list.length ? `${list.length} fish swimming. Catch something rare to add.` : 'An empty tank. Catch a fish and bring it home.', 3000);
+        if (list.length >= 8) list.shift();
+        list.push(best);
+        g.inventory.remove(best);
+        try {
+          localStorage.setItem(KEY, JSON.stringify(list));
+        } catch {}
+        refresh();
+        g.hud.toast(`Plop. Your ${g.inventory.def(best).name} explores its new home.`, 3000);
+      },
+    });
+  }
+
+  /** The most valuable live fish you're carrying. */
+  #bestFish() {
+    const inv = this.game.inventory;
+    return inv.list().filter((i) => i.id.startsWith('fish_')).sort((a, b) => (b.value ?? 0) - (a.value ?? 0))[0]?.id ?? null;
   }
 
   /** A glass display cabinet for fossils dug up on level 3 of the mine. */

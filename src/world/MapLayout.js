@@ -31,7 +31,9 @@ export const MAP = {
     drivein: { x: 110, z: 180, radius: 38 }, // Starlite Drive-In, south of the coast road
     playground: { x: -134, z: 250, radius: 14 }, // Pine Hollow Park, south of the town road
     airfield: { x: 212, z: 250, radius: 108 }, // grass strip east of the drive-in (runway runs east–west)
-    mine: { x: -78, z: -52, radius: 14 }, // the old silver mine, cut into the foot of the mountain
+    mine: { x: -78, z: -52, radius: 14 },
+    funland: { x: -300, z: 70, radius: 40 }, // the abandoned amusement park, west of town
+    bowling: { x: -62, z: 172, radius: 12 }, // Stardust Lanes, just off the town road // the old silver mine, cut into the foot of the mountain
   },
 
   /** Coastline x as a function of z (sea is east of it). */

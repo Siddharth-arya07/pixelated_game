@@ -22,7 +22,8 @@ const BOARDS = {
   darts: { name: 'DARTS', low: false, fmt: (v) => `${v}` },
   snake: { name: 'SNAKE', low: false, fmt: (v) => `${v}` },
   tetris: { name: 'TETRIS', low: false, fmt: (v) => `${v}` },
-  pong2: { name: 'PONG', low: false, fmt: (v) => `${v}-pt wins` },
+  pong2: { name: 'PONG', low: false, fmt: (v) => `${v} wins` },
+  bowling: { name: 'BOWLING', low: false, fmt: (v) => `${v}` },
 };
 
 export function buildBackyard(scene) {
@@ -168,6 +169,11 @@ class Backyard {
       g.net?.online && g.net.event('score', { k, n: name, v });
       if (list[0].n === name && list[0].v === v) g.hud.toast(`NEW RECORD on the board: ${b.name} — ${b.fmt(v)}!`, 3500);
     } else if (list[0].n === name && list[0].v === v && g.scene === this.scene) g.hud.toast(`${name} set a new ${b.name} record: ${b.fmt(v)}`, 3500);
+  }
+
+  /** Other places post here too (e.g. the bowling alley). */
+  recordScore(k, v) {
+    this.#record(k, this.myName, v);
   }
 
   get myName() {
