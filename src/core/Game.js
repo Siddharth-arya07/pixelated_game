@@ -531,7 +531,7 @@ export class Game {
       const smoke = this.viewModel.smoking ? ' · LMB drag' : '';
       this.hud.setHint(
         v.kind === 'air'
-          ? `SHIFT/CTRL throttle ${Math.round(v.throttle * 100)}% · W/S nose down/up · A/D bank · SPACE brakes · alt ${Math.round(v.altitude)} m · E get out`
+          ? `SHIFT/CTRL throttle ${Math.round(v.throttle * 100)}% · W/S nose up/down · F flares · A/D bank · SPACE brakes · alt ${Math.round(v.altitude)} m · E get out`
           : v.kind === 'water'
           ? `W/S throttle · A/D steer · MOUSE look${smoke} · E get off at the dock`
           : v.cfg.ollie

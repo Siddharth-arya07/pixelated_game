@@ -193,7 +193,7 @@ E gets up.
 
 ## New places & things
 
-- **Pine Hollow Airfield** (east of the drive-in): the biplane. SHIFT/CTRL throttle, W/S nose down/up, A/D bank, SPACE brakes, E get out on the ground. Land too hard (or in the sea) and it gets towed back. Friends can ride in the back seat.
+- **Pine Hollow Airfield** (east of the drive-in): the biplane. SHIFT/CTRL throttle, W/S nose up/down, F flares, A/D bank, SPACE brakes, E get out on the ground. Land too hard (or in the sea) and it gets towed back. Friends can ride in the back seat.
 - **The old silver mine** (foot of the mountain): two levels, minecart line, cage lift, a crystal grotto with an underground lake. Take the old pickaxe and helmet at the entrance, LMB veins to mine, sell ore to Old Pete (+25%). Better picks break harder rock. Find Walt's five journal pages.
 - **Pets**: a shiba (behind your house), a husky (harbor), two cats (diner, lighthouse). Feed them three times (dogs: meat/burgers/pizza, cats: fish) to tame and name them. E pet, Q stay/come.
 - **Birds**: gulls round the harbor and lighthouse, crows over the fields, swallows by day, pigeons that scatter.

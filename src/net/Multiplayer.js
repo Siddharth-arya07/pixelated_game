@@ -132,6 +132,7 @@ export class Multiplayer {
       wishFx(g, e.k, new THREE.Vector3(...e.p));
       g.hud.toast(`${this.remotes.get(id)?.name ?? 'Someone'} made a wish at the well.`, 3000);
     });
+    this.on('flares', (e) => g.scene?.name === e.sc && g.fireworks.flares(new THREE.Vector3(...e.p), new THREE.Vector3(...e.v), e.h));
     this.on('flash', (e, id) => {
       const r = this.remotes.get(id);
       if (r?.inMyScene) g.polaroid.remoteFlash(r.avatar.group.position);

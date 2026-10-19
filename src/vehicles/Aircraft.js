@@ -17,8 +17,8 @@ import { Vehicle } from './Vehicle.js';
  * [x, z] like every other vehicle, so remote planes bank and climb too.
  */
 const G = 9.8;
-const TAKEOFF = 19; // m/s: wings start carrying the weight
-const STALL = 13;
+const TAKEOFF = 15; // m/s: wings start carrying the weight
+const STALL = 10;
 const MAX_ALT = 420;
 
 export class Aircraft extends Vehicle {
@@ -56,7 +56,7 @@ export class Aircraft extends Vehicle {
 
   onEnter() {
     super.onEnter();
-    this.game.hud.toast('SHIFT throttle up · CTRL down · W/S nose down/up · A/D bank · SPACE brakes · E get out', 7000);
+    this.game.hud.toast('SHIFT throttle up · CTRL down · W/S nose up/down · A/D bank · F flares · SPACE brakes · E get out', 7000);
   }
 
   onExit() {
@@ -83,17 +83,18 @@ export class Aircraft extends Vehicle {
     if (flying) {
       if (k.down('ShiftLeft') || k.down('ShiftRight')) this.throttle = Math.min(1, this.throttle + dt * 0.5);
       if (k.down('ControlLeft') || k.down('ControlRight')) this.throttle = Math.max(0, this.throttle - dt * 0.6);
-      pitchIn = k.axis('KeyW', 'KeyS'); // S = pull up
+      pitchIn = k.axis('KeyS', 'KeyW'); // W = nose up, S = nose down
       rollIn = -input.steer; // D = bank right
       brake = input.handbrake;
+      if (k.pressed('KeyF') && !this.onGround) this.#flares();
     } else this.throttle = Math.max(0, this.throttle - dt * 0.3);
 
     // ---- airspeed ----------------------------------------------------------------
-    const thrust = this.throttle * (this.onGround ? 11 : 9);
-    const drag = 0.0042 * this.speed * this.speed + (this.onGround ? 0.6 + (brake ? 7 : 0) : 0.15);
+    const thrust = this.throttle * (this.onGround ? 8 : 6.5);
+    const drag = 0.0095 * this.speed * this.speed + (this.onGround ? 0.6 + (brake ? 7 : 0) : 0.15);
     this.speed += (thrust - drag * Math.sign(this.speed || 1) - (this.onGround ? 0 : G * Math.sin(this.pitch))) * dt;
     if (this.onGround && this.speed < 0.05 && thrust === 0) this.speed = Math.max(0, this.speed);
-    this.speed = THREE.MathUtils.clamp(this.speed, -2, 62);
+    this.speed = THREE.MathUtils.clamp(this.speed, -2, 30); // ~55–60 mph flat out
     const lift = THREE.MathUtils.clamp((this.speed - STALL) / (TAKEOFF - STALL), 0, 1);
 
     // ---- attitude ------------------------------------------------------------------
@@ -181,6 +182,19 @@ export class Aircraft extends Vehicle {
       g.farBoost = THREE.MathUtils.damp(g.farBoost ?? 0, THREE.MathUtils.clamp(alt * 1.4, 0, 230), 1.5, dt);
       if (this.engine) this.engine.setRPM(0.25 + this.throttle * 0.75);
     }
+  }
+
+  /** F: a pair of flares pops out each side and drifts down burning. */
+  #flares() {
+    const g = this.game;
+    if ((this._flareT ?? 0) > g.time) return;
+    this._flareT = g.time + 0.6;
+    const o = this.object;
+    o.updateMatrixWorld();
+    const at = new THREE.Vector3(0, 1.2, -1.5).applyMatrix4(o.matrixWorld);
+    const vel = new THREE.Vector3(Math.sin(this.heading), 0, Math.cos(this.heading)).multiplyScalar(this.speed * 0.4);
+    g.fireworks.flares(at, vel, this.heading);
+    g.net?.online && g.net.event('flares', { p: [at.x, at.y, at.z], v: [vel.x, vel.y, vel.z], h: this.heading, sc: g.scene.name });
   }
 
   /** Too hard, too steep, or into the water: boom, then the plane is back at the airfield. */

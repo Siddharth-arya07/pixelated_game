@@ -206,6 +206,20 @@ export class Fireworks {
     return true;
   }
 
+  /** Aircraft flares: hot white-orange stars kicked out sideways, falling slowly with smoke trails. */
+  flares(p, vel, heading) {
+    this.#attach();
+    const side = new THREE.Vector3(Math.cos(heading), 0, -Math.sin(heading));
+    for (let k = 0; k < 6; k++) {
+      const s = k % 2 ? 1 : -1;
+      const v = vel.clone().addScaledVector(side, s * (6 + k)).add(new THREE.Vector3(0, -2 - k * 0.5, 0));
+      this.spawn(p, v, k < 2 ? PAL.white : PAL.orange, { life: 3.2, size: 1.1, drag: 0.6, grav: 0.35, flags: 1 | 16, c2: PAL.red });
+    }
+    this.#flash(p, 0xffc070, 0.4);
+    this.#thump(p, 0.6);
+    this.#loopNoise(p, 1.2, 3000, 0.12);
+  }
+
   #remote(e) {
     if (this.game.scene?.name !== e.scene) return;
     this.light(e.id, { x: e.p[0], y: e.p[1], z: e.p[2] }, e.seed, e.yaw);
