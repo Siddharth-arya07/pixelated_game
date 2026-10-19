@@ -133,7 +133,7 @@ export class FishingSystem {
     const wh = this.bobber.visible ? g.scene?.waterHeight?.(this.bobber.position.x, this.bobber.position.z) : null;
     if (wh !== null && wh !== undefined) this.waterY = wh;
     const boat = g.vehicles.active?.kind === 'water' ? g.vehicles.active : null;
-    this.rodView.visible = equipped || (this.fromBoat && g.inventory.equipped === 'fishing_rod');
+    this.rodView.visible = !!(equipped || (this.fromBoat && g.inventory.equipped === 'fishing_rod'));
     if (boat && !this.active && g.input.pressed('KeyC')) {
       if (!g.inventory.has('fishing_rod')) g.hud.toast('No rod on board.');
       else if (Math.abs(boat.speed) > 0.8) g.hud.toast('Stop the boat first.');
