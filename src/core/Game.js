@@ -518,7 +518,7 @@ export class Game {
       let hint = this.mp.ride ? `riding with ${this.mp.ride.veh.remoteName ?? 'them'} · MOUSE look · E hop off` : `WASD move · SHIFT run · E interact · I inventory${this.inventory.equipped === 'flashlight' ? ' · L flashlight' : ''}`;
       if (this.fishing.active) hint = 'LMB cast / reel · E or RMB stop fishing';
       else if (this.inventory.equipped === 'jar') hint = `LMB catch a firefly (${this.fireflies.jar}/20 in the jar) · E interact · I inventory`;
-      else if (this.polaroid.equipped) hint = 'LMB take photo · Q / scroll film · RMB zoom · K album · E interact';
+      else if (this.polaroid.equipped) hint = 'LMB take photo · Q / scroll film · RMB zoom · K album · X put away';
       else if (this.viewModel.smoking) hint = `HOLD LMB drag · R flick ash · G toss${this.player.seated ? ' · E stand' : ' · WASD move'}`;
       else if (this.player.seated) hint = 'MOUSE look · I inventory (smoke, drink) · E stand up';
       else if (this.hunting.equipped) hint = 'LMB fire · RMB aim · R reload · E interact · I inventory';

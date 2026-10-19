@@ -145,12 +145,16 @@ export class Polaroid {
       if (this.zoom) this.#setZoom(0);
       return;
     }
+    if (input.pressed('KeyX')) {
+      g.inventory.equip('polaroid'); // toggles it off
+      return;
+    }
     if (input.pressed('KeyQ')) this.#cycle(1);
     const want = input.mouseDown(2) ? 1 : 0;
     if (want !== this.zoom) this.#setZoom(want);
     const f = FILMS[this.film];
     this.vfName.textContent = f.name;
-    this.vfInfo.textContent = `${f.note} · ${Math.max(0, this.shotsLeft)} shots left`;
+    this.vfInfo.textContent = `${f.note} · ${Math.max(0, this.shotsLeft)} shots left · X put camera away`;
     if (input.locked && input.mousePressed(0) && !this.busy) {
       input.consumeMouse(0);
       this.#shoot();
