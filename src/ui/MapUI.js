@@ -184,6 +184,16 @@ export class MapUI {
       ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.stroke();
     }
     ctx.restore();
+    // strays you haven't won over yet (paw prints)
+    for (const m of g.pets?.mapMarkers() ?? []) {
+      const [mx, mz] = this.#px(m.x, m.z);
+      ctx.fillStyle = '#8a4a2a';
+      ctx.font = 'bold 13px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🐾', mx, mz + 4);
+      ctx.font = '10px monospace';
+      ctx.fillText(m.label, mx, mz - 8);
+    }
     // friends in the room
     for (const m of g.mp?.online ? g.mp.markers() : []) {
       const at = m.scene === 'World' ? m : MAP.poi[INDOOR[m.scene]] ?? null;

@@ -76,6 +76,7 @@ export const CATALOGS = {
       { id: 'pickaxe_steel', price: 45, unique: true },
       { id: 'pickaxe_diamond', price: 160, unique: true },
       { id: 'miner_helmet', price: 12, unique: true },
+      { id: 'part_chain', price: 30, unique: true },
       { id: 'coffee', price: 1 },
     ],
     buysCatch: true,

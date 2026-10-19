@@ -49,7 +49,7 @@ export class Fireflies {
   get active() {
     const g = this.game;
     const m = g.dayNight.minutes;
-    return g.scene?.outdoor && (m < 320 || m > 1220) && !(g.weather?.rain > 0.2);
+    return g.scene?.outdoor && g.seasons?.name !== 'winter' && (m < 320 || m > 1220) && !(g.weather?.rain > 0.2);
   }
 
   #place(f, near) {

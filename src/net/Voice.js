@@ -107,6 +107,7 @@ export class Voice {
     peer.el.srcObject = stream;
     peer.el.play().catch(() => {});
     const src = ctx.createMediaStreamSource(stream);
+    peer.src = src;
     peer.gain = ctx.createGain();
     peer.analyser = ctx.createAnalyser();
     peer.analyser.fftSize = 512;
@@ -159,6 +160,16 @@ export class Voice {
       const sameVeh = myVeh && r?.state?.v?.id === myVeh.id;
       const target = !sameScene ? 0 : sameVeh ? 1.6 : 1;
       p.gain.gain.setTargetAtTime(target, g.audio.ctx.currentTime, 0.15);
+      // on the radio (WPHR 3AM): heard anywhere by whoever's tuned in
+      if (r?.state?.air && !sameScene && g.radio?.tuned) {
+        if (!p.radioTap) {
+          p.radioTap = g.audio.ctx.createGain();
+          p.radioTap.gain.value = 0;
+          p.src?.connect(p.radioTap);
+          p.radioTap.connect(g.radio.bus);
+        }
+        p.radioTap.gain.setTargetAtTime(1.2, g.audio.ctx.currentTime, 0.2);
+      } else p.radioTap?.gain.setTargetAtTime(0, g.audio.ctx.currentTime, 0.2);
       p.level = this.#meter(p.analyser);
     }
   }

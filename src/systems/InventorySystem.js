@@ -71,6 +71,21 @@ export const ITEMS = {
   ore_amethyst: { name: 'Amethyst', desc: 'A purple crystal that glows faintly in the dark.', color: '#b070ff', value: 18, catch: true },
   ore_emerald: { name: 'Emerald', desc: 'Green and clear. Pete whistles when he sees it.', color: '#40f090', value: 38, catch: true },
   ore_diamond: { name: 'Diamond', desc: 'Rough, but unmistakable.', color: '#c8fbff', value: 90, catch: true },
+  sled: { name: 'Old Sled', desc: 'Wooden, red runners. Use it on a snowy slope in winter.', color: '#b02a20', use: 'sled' },
+  part_valve: { name: 'Brass Steam Valve', desc: 'For the old mine train on level 3.', color: '#c8a040' },
+  part_chain: { name: 'Drive Chain', desc: 'Greasy and heavy. For the old mine train on level 3.', color: '#5a5a60' },
+  fossil_ammonite: { name: 'Ammonite Fossil', desc: 'A coiled sea shell, 180 million years old. Display it at home.', color: '#b8a080' },
+  fossil_trilobite: { name: 'Trilobite Fossil', desc: 'An ancient sea bug. Display it at home.', color: '#8a7a6a' },
+  fossil_fern: { name: 'Fern Fossil', desc: 'A fern pressed into slate. Display it at home.', color: '#6a7a5a' },
+  fossil_fish: { name: 'Fossil Fish', desc: 'A fish skeleton in stone. Display it at home.', color: '#9a8a7a' },
+  fossil_tooth: { name: 'Dinosaur Tooth', desc: 'Serrated and huge. Display it at home.', color: '#d8c8a8' },
+  fossil_amber: { name: 'Amber with a Bug', desc: 'A mosquito in golden resin. Display it at home.', color: '#e09030' },
+  gift_mouse: { name: 'Chewed Toy Mouse', desc: 'A gift from your cat. Slightly damp.', color: '#8a8a90' },
+  gift_sock: { name: 'One of Your Socks', desc: 'You were wondering where that went.', color: '#d04040' },
+  gift_feather: { name: 'A Feather', desc: 'A gull feather. The gull was probably fine.', color: '#e8e8e8' },
+  gift_cap: { name: 'Bottle Cap', desc: 'Shiny. Clearly priceless, to a cat.', color: '#c8a040' },
+  gift_coin: { name: 'Old Coin', desc: 'A 1962 quarter. Sells for a bit.', color: '#b0b0b0', value: 3, catch: true },
+  gift_ring: { name: 'Silver Ring', desc: 'Where did the cat even FIND this? Worth something.', color: '#e0e4ec', value: 40, catch: true },
   jar: { name: 'Mason Jar', desc: 'Equip it outside on a warm night: LMB catches fireflies. A full jar is a lantern.', color: '#b8d8c8', equip: true },
   polaroid: { name: 'Polaroid OneStep', desc: 'Instant camera. Equip: LMB snap · Q/scroll film stock · RMB zoom · K album. Needs instant film.', color: '#e8e4dc', equip: true },
   polaroid_film: { name: 'Instant Film', desc: 'A pack of 10 instant photos.', color: '#2a2a30' },
@@ -193,6 +208,11 @@ export class InventorySystem {
       return false;
     }
     if (def.use === 'firework') return g.fireworks.use(id);
+    if (def.use === 'sled') {
+      g.closeUI();
+      g.seasons.useSled();
+      return false;
+    }
     if (def.use === 'readBook') {
       setTimeout(() => g.openUI(() => g.book.show()), 0);
       return false;

@@ -72,7 +72,7 @@ export class WeatherSystem {
   }
 
   #updateRain(dt, scene) {
-    const outdoor = scene.outdoor && this.storm > 0.03;
+    const outdoor = scene.outdoor && this.storm > 0.03 && this.game.seasons?.name !== 'winter'; // winter: snow instead (Seasons)
     if (this._dropsScene !== (outdoor ? scene : null)) {
       this.rainMesh.parent?.remove(this.rainMesh);
       if (outdoor) scene.root.add(this.rainMesh);

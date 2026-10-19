@@ -620,3 +620,18 @@ body.touch #room { top: calc(48px + env(safe-area-inset-top)); font-size: 14px; 
 #shiplabel b { display: block; font-size: 24px; letter-spacing: 1px; }
 #shiplabel span { display: block; font-size: 16px; color: #c8d8f0; }
 #shiplabel i { display: block; font-style: normal; font-size: 14px; color: #8aa0c0; margin-top: 2px; }
+
+/* ---------------- Plane banner, roasting, party games ---------------- */
+#banner-ui { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000a; pointer-events: auto; }
+#banner-ui.hidden { display: none; }
+#banner-ui input { text-transform: uppercase; font-family: Impact, 'Arial Black', sans-serif; letter-spacing: 1px; }
+#roast { position: absolute; left: 50%; bottom: 20%; transform: translateX(-50%); text-align: center; font-family: var(--pixel); color: #fff; text-shadow: 1px 1px 0 #000; pointer-events: none; }
+#roast.hidden { display: none; }
+.rs-bar { width: 240px; height: 14px; border: 2px solid #fff; margin: 0 auto 6px; position: relative; background: #0008; }
+.rs-bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #f0e8d0; }
+.rs-bar::after { content: ''; position: absolute; left: 53%; width: 22%; top: -4px; bottom: -4px; border-left: 2px solid #e8a040; border-right: 2px solid #e8a040; }
+.rs-t { font-size: 17px; }
+#party { position: absolute; left: 50%; top: 16%; transform: translateX(-50%); text-align: center; font-family: var(--pixel); color: #ffe8a0; text-shadow: 2px 2px 0 #000; pointer-events: none; }
+#party.hidden { display: none; }
+#party b { display: block; font-size: 38px; letter-spacing: 2px; }
+#party span { display: block; font-size: 18px; color: #f0f0f0; }

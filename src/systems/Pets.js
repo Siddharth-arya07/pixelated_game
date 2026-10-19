@@ -152,7 +152,7 @@ export class Pets {
     return {
       range: 2.6,
       prompt: () => {
-        if (a.owned) return `Pet ${a.name}`;
+        if (a.owned) return a.def.kind === 'dog' ? `Pet ${a.name} · Z sit · T throw a stick` : `Pet ${a.name}`;
         const f = food();
         if (f) return `Offer ${g.inventory.def(f).name} to the ${a.def.label} (${a.trust}/${NEED})`;
         return `The ${a.def.label} watches you. (${a.def.kind === 'dog' ? 'it’d eat meat, burgers, pizza' : 'it’d like some fish'})`;
@@ -257,11 +257,12 @@ export class Pets {
         if (scene.outdoor) a.pos.y = scene.groundHeight(a.pos.x, a.pos.z);
       }
       a.mixer.update(dt);
-      if ((a.eatT -= dt) > 0 || (a.petT -= dt) > 0) continue;
+      if ((a.eatT -= dt) > 0 || (a.petT -= dt) > 0 || a.busy) continue;
       if (follows) this.#follow(a, dt, scene, indoorY, i++);
       else if (a.owned) this.#idleAt(a, dt, scene, indoorY);
       else this.#wild(a, dt, scene);
     }
+    this.#tricks(dt);
     this.#updateRemote(dt);
     this.#updateHearts(dt);
   }
@@ -346,6 +347,147 @@ export class Pets {
       a.moveTo(a.pos.x, a.pos.z, 0, dt, scene);
       a.play(dp < 8 && a.def.kind === 'dog' ? 'Idle_2' : 'Idle');
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tricks: fetch (dogs), sit (dogs, learned), gifts (cats)
+  // ---------------------------------------------------------------------------
+
+  mapMarkers() {
+    return [...this.strays.values()].filter((a) => !a.owned && !a.takenByRemote).map((a) => ({ x: a.home.x, z: a.home.z, label: a.def.label }));
+  }
+
+  #tricks(dt) {
+    const g = this.game;
+    const scene = g.scene;
+    const dogs = this.owned.filter((a) => a.def.kind === 'dog' && !a.stay && a.obj.parent === scene?.root);
+    const free = !g.uiOpen && !g.focus && g.player.enabled && !g.vehicle.active;
+    // T: throw a stick (outside, with a dog around)
+    if (free && g.input.pressed('KeyT') && dogs.length) {
+      if (!scene.outdoor) g.hud.toast('Not in the house!', 1500);
+      else if (!this.stick) this.#throwStick(dogs[0]);
+    }
+    // Z: "Sit!" to the dog you're looking at
+    const f = g.interaction.focus?.target;
+    const a = f && [...this.strays.values()].find((x) => x.obj === f);
+    if (free && g.input.pressed('KeyZ') && a?.owned) this.#sit(a);
+    if (this.stick) this.#fetch(dt);
+    // cats leave presents on the doorstep, one per cat per day
+    const day = g.dayNight.day;
+    if (this.giftDay !== day && g.scenes.World?.built) {
+      if (this.giftDay !== undefined) for (const c of this.owned.filter((x) => x.def.kind === 'cat')) this.#gift(c);
+      this.giftDay = day;
+    }
+  }
+
+  #sit(a) {
+    const g = this.game;
+    if (a.def.kind === 'cat') return g.hud.toast(`${a.name} looks at you like you’ve lost your mind.`, 2500);
+    const t = (this.saved[a.def.sid] ??= {});
+    t.sit = (t.sit ?? 0) + 1;
+    const learned = t.sit >= 3;
+    if (!learned && Math.random() < 0.6) {
+      g.hud.toast(`${a.name} tilts their head. (${t.sit}/3 — keep at it)`, 2000);
+    } else {
+      a.petT = 4;
+      a.play('Idle_2_HeadLow');
+      this.#heartBurst(a, 2);
+      g.hud.toast(learned ? (t.sit === 3 ? `${a.name} sits! They’ve learned SIT. Good dog!` : `${a.name} sits. Very good.`) : `${a.name} sits — by accident, probably. Good dog anyway!`, 2500);
+    }
+    this.#saveTricks(a, t);
+  }
+
+  #saveTricks(a, t) {
+    this.saved[a.def.sid] = { ...this.saved[a.def.sid], ...t };
+    this.#save();
+  }
+
+  #throwStick(dog) {
+    const g = this.game;
+    const scene = g.scene;
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.6, 5), scene.mat({ color: 0x6a4a2a }));
+    const dir = g.camera.getWorldDirection(new THREE.Vector3());
+    m.position.copy(g.camera.position).addScaledVector(dir, 0.6);
+    scene.root.add(m);
+    this.stick = { m, vel: dir.multiplyScalar(13).add(new THREE.Vector3(0, 4, 0)), dog, phase: 'fly', scene };
+    g.hud.toast(`“Go get it, ${dog.name}!”`, 1500);
+    this.#voice(dog, 1.2);
+  }
+
+  #fetch(dt) {
+    const g = this.game;
+    const st = this.stick;
+    const dog = st.dog;
+    if (g.scene !== st.scene || !dog.owned) {
+      st.m.removeFromParent();
+      this.stick = null;
+      return;
+    }
+    const scene = st.scene;
+    if (st.phase === 'fly') {
+      st.vel.y -= 9.8 * dt;
+      st.m.position.addScaledVector(st.vel, dt);
+      st.m.rotation.x += dt * 9;
+      const gy = scene.groundHeight(st.m.position.x, st.m.position.z);
+      if (st.m.position.y <= gy + 0.05) {
+        st.m.position.y = gy + 0.05;
+        st.m.rotation.set(Math.PI / 2, Math.random() * 3, 0);
+        st.phase = 'chase';
+      }
+    }
+    if (st.phase === 'fly' || st.phase === 'chase') {
+      const d = dog.moveTo(st.m.position.x, st.m.position.z, 7.5, dt, scene);
+      dog.play('Gallop');
+      dog.busy = true;
+      if (st.phase === 'chase' && d < 0.7) st.phase = 'return';
+    } else if (st.phase === 'return') {
+      const f = g.player.feet;
+      const d = dog.moveTo(f.x, f.z, 5.5, dt, scene);
+      dog.play('Gallop');
+      st.m.position.copy(dog.pos).add(_v.set(Math.sin(dog.yaw) * 0.45, 0.4, Math.cos(dog.yaw) * 0.45));
+      st.m.rotation.set(0, dog.yaw + Math.PI / 2, Math.PI / 2);
+      if (d < 1.4) {
+        st.m.position.set(f.x + Math.sin(dog.yaw) * 0.8, scene.groundHeight(f.x, f.z) + 0.05, f.z + Math.cos(dog.yaw) * 0.8);
+        st.m.rotation.set(Math.PI / 2, 0, 0);
+        dog.busy = false;
+        dog.petT = 1.5;
+        dog.play('Idle_2');
+        this.#heartBurst(dog, 3);
+        this.#voice(dog, 1.2);
+        const t = (this.saved[dog.def.sid] ??= {});
+        t.fetch = (t.fetch ?? 0) + 1;
+        this.#saveTricks(dog, t);
+        g.hud.toast(t.fetch === 1 ? `${dog.name} brings it back and drops it at your feet. Fetch! (T to throw again)` : `${dog.name} drops the stick, tail going. (${t.fetch} fetches)`, 2500);
+        const m = st.m;
+        setTimeout(() => m.removeFromParent(), 20000);
+        this.stick = null;
+      }
+    }
+  }
+
+  #gift(cat) {
+    const g = this.game;
+    const W = g.scenes.World;
+    const h = W.poi.house;
+    const x = h.x + (Math.random() - 0.5) * 2;
+    const z = h.z + 6.3;
+    const y = W.groundHeight(x, z);
+    const roll = Math.random();
+    const gift = roll < 0.25 ? 'gift_mouse' : roll < 0.45 ? 'gift_sock' : roll < 0.62 ? 'gift_feather' : roll < 0.8 ? 'gift_cap' : roll < 0.95 ? 'gift_coin' : 'gift_ring';
+    const m = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.18), W.mat({ color: parseInt(g.inventory.def(gift).color.slice(1), 16) }));
+    m.position.set(x, y + 0.03, z);
+    W.root.add(m);
+    W.addInteractable(m, {
+      prompt: `${cat.name} left something on the doorstep`,
+      range: 2.4,
+      action: () => {
+        g.inventory.add(gift);
+        m.removeFromParent();
+        W.interactables = W.interactables.filter((o) => o !== m);
+        g.hud.toast(`${g.inventory.def(gift).name}. ${cat.name} looks extremely pleased with themselves.`, 4000);
+      },
+    });
+    if (g.scene === W) g.hud.toast(`Somewhere near the front door, ${cat.name} has left you a present.`, 3500);
   }
 
   // ---------------------------------------------------------------------------
@@ -486,7 +628,7 @@ export class Pets {
 
   #save() {
     const out = {};
-    for (const a of this.strays.values()) if (a.trust || a.name) out[a.def.sid] = { trust: a.trust, name: a.name };
+    for (const a of this.strays.values()) if (a.trust || a.name) out[a.def.sid] = { ...this.saved[a.def.sid], trust: a.trust, name: a.name };
     try {
       localStorage.setItem(KEY, JSON.stringify(out));
     } catch {}

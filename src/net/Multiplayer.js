@@ -226,6 +226,7 @@ export class Multiplayer {
       it: g.inventory.equipped,
       sm: g.viewModel.smoking ? 1 : 0,
       pets: g.pets?.netState(),
+      air: g.radio?.onAir ? 1 : undefined,
       fl: g.flashlightOn ? 1 : 0,
       talkLevel: r2(this.voice.level),
       mute: this.voice.muted ? 1 : 0,
@@ -239,6 +240,7 @@ export class Multiplayer {
       const o = v.object;
       s.a = v.cfg.ollie ? 'skate' : 'drive';
       s.v = { id: v.id, seat: 0, p: [r2(o.position.x), r2(o.position.y), r2(o.position.z)], h: r2(v.heading), r: [r2(o.rotation.x), r2(o.rotation.z)], spd: r2(v.speed), hl: v.headlightsOn ? 1 : 0 };
+      if (v.cfg.fly) Object.assign(s.v, { ag: v.onGround ? 0 : 1, sm: v.smokeOn ? 1 : 0, bn: v.bannerText ?? undefined });
     } else if (this.ride) {
       s.a = 'ride';
       s.v = { id: this.ride.veh.id, seat: this.ride.seat };
@@ -262,6 +264,7 @@ export class Multiplayer {
     if (full) {
       w.deer = g.hunting.netSnapshot();
       if (g.scenes.Cave?.built) w.ore = g.scenes.Cave.netSnapshot();
+      if (g.balloon.t0) w.balloon = g.balloon.t0;
     }
     this.net.send('world', { w });
   }
@@ -284,6 +287,7 @@ export class Multiplayer {
     if (w.rail && W.railway && !W.railway.run) W.railway.startRun(w.rail.dir, w.rail.s);
     if (w.film && W.drivein) W.drivein.setClock(w.film);
     if (w.deer) g.hunting.netApply(w.deer);
+    if (w.balloon && !g.balloon.t0) g.balloon.t0 = w.balloon;
     if (w.ore) {
       if (g.scenes.Cave?.built) g.scenes.Cave.netApply(w.ore);
       else g.pendingOre = w.ore;
@@ -315,11 +319,20 @@ export class Multiplayer {
     veh.speed = v.spd ?? 0;
     if (veh.setHeadlights && !!v.hl !== !!veh.headlightsOn) veh.setHeadlights(!!v.hl);
     if (veh.prop) veh.prop.rotation.z += g.dtLast * 50;
+    if (veh.cfg.fly) {
+      veh.onGround = !v.ag;
+      veh.smokeOn = !!v.sm;
+      g.planeFX.setBanner(veh, v.bn ?? null);
+    }
     veh.engine?.setRPM?.(Math.min(1, Math.abs(veh.speed) / veh.cfg.maxSpeed));
     o.updateMatrixWorld();
   }
 
   releaseVehicle(veh) {
+    if (veh.cfg.fly) {
+      this.game.planeFX.setBanner(veh, null);
+      veh.smokeOn = false;
+    }
     veh.remoteDriver = null;
     veh.remoteName = null;
     if (this.game.vehicle.active !== veh) {

@@ -26,6 +26,14 @@ import { signTexture } from '../core/Procedural.js';
  * shared in multiplayer. Five pages of Walt's journal are scattered around.
  */
 const L2 = -30;
+export const FOSSILS = {
+  ammonite: { name: 'Ammonite', desc: 'A coiled sea shell, 180 million years old. The whole valley was ocean once.' },
+  trilobite: { name: 'Trilobite', desc: 'An ancient sea bug with three lobes. Older than the dinosaurs by a long way.' },
+  fern: { name: 'Fern Leaf', desc: 'A perfect fern pressed into slate, every leaflet still there.' },
+  fish: { name: 'Fossil Fish', desc: 'A little fish skeleton mid-swim, frozen in stone.' },
+  tooth: { name: 'Dinosaur Tooth', desc: 'Serrated, the size of your thumb. Something big lost this.' },
+  amber: { name: 'Amber with a Bug', desc: 'Golden tree resin with a tiny mosquito inside. Don’t get any ideas.' },
+};
 
 export class CaveScene extends BaseScene {
   constructor(game) {
@@ -35,7 +43,7 @@ export class CaveScene extends BaseScene {
     this.nodeMeshes = [];
     this.bats = [];
     this.sparkList = [];
-    this.killY = -70; // level 2 is 30 m down
+    this.killY = -100; // level 3 is 60 m down
   }
 
   build() {
@@ -75,6 +83,15 @@ export class CaveScene extends BaseScene {
     this.tunnel([[-3, L2, -84], [-14, L2, -80], [-24, L2, -73], [GOLD.x + 3, L2, GOLD.z - 6]], 1.9, { lanterns: 0 });
     this.cavern(GOLD, 8, 6, [new THREE.Vector3(GOLD.x + 8, L2, GOLD.z), new THREE.Vector3(GOLD.x + 3, L2, GOLD.z - 6)]);
 
+    // ---------------- LEVEL 3: the old train line to the falls ----------------
+    const L3 = -60;
+    const DEP = new THREE.Vector3(10, L3, -48);
+    const FALLS = new THREE.Vector3(-60, L3, -86);
+    this.cavern(DEP, 10, 7, [new THREE.Vector3(10, L3, -58)]);
+    this.trainPath = this.tunnel([[10, L3, -58], [13, L3, -72], [8, L3, -90], [-8, L3, -104], [-28, L3, -110], [-47.3, L3, -98.7]], 2.6, { timbers: true, rails: true, lanterns: 15 });
+    this.cavern(FALLS, 18, 14, [new THREE.Vector3(-47.3, L3, -98.7)]);
+    this.L3 = { DEP, FALLS };
+
     this.#entrance();
     this.#hub(HUB);
     this.#lift(new THREE.Vector3(8.5, 0, -50), LOW);
@@ -82,6 +99,7 @@ export class CaveScene extends BaseScene {
     this.#ores({ CU, COAL, DEEP, GROT, GOLD, HUB });
     this.#cart();
     this.#journal({ COAL, DEEP, GROT, GOLD });
+    this.#level3(GOLD);
     this.#batsInit([GROT, DEEP, COAL]);
 
     this.updaters.push((dt, t) => this.#tick(dt, t));
@@ -618,6 +636,279 @@ export class CaveScene extends BaseScene {
   }
 
   // ===========================================================================
+  // Level 3: the old train, the falls, fossils
+  // ===========================================================================
+
+  #level3(GOLD) {
+    const g = this.game;
+    const { DEP, FALLS } = this.L3;
+    // the cage goes one stop further down
+    const low = new THREE.Vector3(10, -30, -48);
+    this.#lever(low, -1.3, 'Pull the other lever: cage down to level 3', 'level3');
+    this.#lever(new THREE.Vector3(DEP.x, DEP.y, DEP.z), 1.3, 'Pull the lever: cage up to level 2', 'level2', true);
+    this.addSpawn('level3', [DEP.x, DEP.y, DEP.z + 2.5], 0);
+
+    // the train: a little saddle-tank loco and two ore wagons, rusted on the rails
+    const iron = this.mat({ color: 0x3a3330 });
+    const rust = this.mat({ color: 0x7a4a2a });
+    const brass = this.mat({ color: 0xc8a040 });
+    const train = new THREE.Group();
+    const boiler = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 2.2, 10), iron);
+    boiler.rotation.x = Math.PI / 2;
+    boiler.position.set(0, 1.0, 0.4);
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.4, 1.0), rust);
+    cab.position.set(0, 1.2, -1.2);
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.08, 1.2), iron);
+    roof.position.set(0, 1.95, -1.2);
+    const stack = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.2, 0.7, 8), iron);
+    stack.position.set(0, 1.8, 1.2);
+    const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.14, 8), brass);
+    lamp.rotation.x = Math.PI / 2;
+    lamp.position.set(0, 1.25, 1.55);
+    train.add(boiler, cab, roof, stack, lamp);
+    for (const z of [-1.1, 0, 1.0]) for (const x of [-0.55, 0.55]) {
+      const w = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.1, 10), iron);
+      w.rotation.z = Math.PI / 2;
+      w.position.set(x, 0.32, z);
+      train.add(w);
+    }
+    for (const k of [1, 2]) {
+      const wag = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 1.6), rust);
+      wag.position.set(0, 0.75, -1.2 - k * 2.0);
+      train.add(wag);
+    }
+    this.root.add(train);
+    this.train = train;
+    this.trainS = 0.02;
+    this.putTrain = (s) => {
+      const p = this.trainPath.getPointAt(s);
+      const t = this.trainPath.getTangentAt(s).multiplyScalar(this.trainDirSign ?? 1);
+      train.position.set(p.x, p.y + 0.05, p.z);
+      train.rotation.y = Math.atan2(t.x, t.z);
+    };
+    this.putTrain(this.trainS);
+    this.trainLen = this.trainPath.getLength();
+    this.repaired = localStorage.getItem('3am-train') === '1';
+    const need = () => {
+      const inv = g.inventory;
+      const miss = [];
+      if (!inv.has('part_valve')) miss.push('a brass steam valve (Walt hid one in the gold room on level 2)');
+      if (!inv.has('part_chain')) miss.push('a drive chain (Old Pete sells them)');
+      if (!inv.has('ore_coal', 5)) miss.push(`coal ×5 (you have ${inv.count('ore_coal')})`);
+      return miss;
+    };
+    this.addInteractable(cab, {
+      prompt: () => (this.trainRiding ? '' : !this.repaired ? 'Look over the old mine train' : this.trainS < 0.5 ? 'Ride the train to the underground falls' : 'Ride the train back to the lift'),
+      range: 3.4,
+      enabled: () => !this.trainRiding,
+      action: () => {
+        if (!this.repaired) {
+          const miss = need();
+          if (miss.length) return g.openUI(() => g.note.show(`The old train. Seized up, but whole. Walt’s writing is chalked on the cab:\n\n“She runs. Needs:”\n\n· ${miss.join('\n· ')}`));
+          g.inventory.remove('part_valve');
+          g.inventory.remove('part_chain');
+          g.inventory.remove('ore_coal', 5);
+          this.repaired = true;
+          try {
+            localStorage.setItem('3am-train', '1');
+          } catch {}
+          this.#whistle();
+          return g.hud.toast('Valve on, chain on, coal in the firebox… she wheezes, coughs, and the whistle screams. She RUNS.', 6000);
+        }
+        this.trainRiding = true;
+        this.trainDir = this.trainS < 0.5 ? 1 : -1;
+        this.trainV = 0;
+        g.player.enabled = false;
+        this.#whistle();
+      },
+    });
+    const tLight = this.addLight({ position: [DEP.x, DEP.y + 1.3, DEP.z], color: 0xffd890, range: 10, intensity: 1.2 });
+    this.trainLight = tLight;
+    // the valve, in a little tin box in Walt's gold room
+    const box = this.box(0.4, 0.25, 0.3, this.mat({ color: 0x5a6a5a }), GOLD.x - 4, GOLD.y + 0.125, GOLD.z + 2, { collide: false });
+    this.addInteractable(box, {
+      prompt: () => (g.inventory.has('part_valve') || this.repaired ? 'An empty tin box' : 'A tin box labelled “FOR THE TRAIN — W.”'),
+      action: () => {
+        if (g.inventory.has('part_valve') || this.repaired) return;
+        g.inventory.add('part_valve');
+        g.hud.toast('A brass steam valve, wrapped in an oily rag. For the train on level 3.', 4500);
+      },
+    });
+    this.addSpawn('falls', [FALLS.x + 9, FALLS.y, FALLS.z - 9], Math.PI * 0.25);
+    this.addSpawn('depot', [DEP.x - 3, DEP.y, DEP.z - 6], 0);
+
+    // ---- the underground falls ----
+    const wf = new THREE.Mesh(new THREE.PlaneGeometry(7, 13), this.mat({ map: this.tex('water', 1, 3), color: 0x9ad8ff, unlit: true, opacity: 0.8, scroll: [0, 0.6], doubleSide: true }));
+    wf.position.set(FALLS.x - 13, FALLS.y + 6.5, FALLS.z + 4);
+    wf.rotation.y = Math.PI / 2 - 0.3;
+    this.root.add(wf);
+    const pool = new THREE.Mesh(new THREE.CircleGeometry(6, 24), this.mat({ color: 0x2a7aa8, unlit: true, opacity: 0.85 }));
+    pool.rotation.x = -Math.PI / 2;
+    pool.position.set(FALLS.x - 9, FALLS.y + 0.05, FALLS.z + 3);
+    this.root.add(pool);
+    this.addColliderBox(FALLS.x - 9, FALLS.y + 0.8, FALLS.z + 3, 10, 1.6, 10);
+    this.addLight({ position: [FALLS.x - 9, FALLS.y + 3, FALLS.z + 3], color: 0x60c0ff, range: 18, intensity: 1.5 });
+    // glowing algae on the walls
+    const glow = this.mat({ color: 0x60ffe0, unlit: true });
+    for (let k = 0; k < 70; k++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 14 + Math.random() * 3;
+      const d = new THREE.Mesh(new THREE.SphereGeometry(0.05 + Math.random() * 0.06, 4, 3), glow);
+      d.position.set(FALLS.x + Math.cos(a) * r, FALLS.y + 1 + Math.random() * 9, FALLS.z + Math.sin(a) * r);
+      this.root.add(d);
+    }
+    this.addLight({ position: [FALLS.x + 6, FALLS.y + 6, FALLS.z - 6], color: 0x60ffd0, range: 16, intensity: 0.8 });
+    this.fallsAt = new THREE.Vector3(FALLS.x - 12, FALLS.y + 2, FALLS.z + 4);
+    this.fallSound = true;
+
+    // ---- fossil dig sites ----
+    const sand = this.mat({ color: 0x9a8a6a });
+    const spots = [];
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2 + 0.6;
+      const r = 8 + (k % 3) * 2;
+      spots.push(new THREE.Vector3(FALLS.x + Math.cos(a) * r, FALLS.y, FALLS.z + Math.sin(a) * r));
+    }
+    spots.push(new THREE.Vector3(-20, DEP.y, -108), new THREE.Vector3(12, DEP.y, -80));
+    for (const p of spots) {
+      const mound = new THREE.Mesh(new THREE.SphereGeometry(0.7, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), sand);
+      mound.scale.y = 0.4;
+      mound.position.copy(p);
+      this.root.add(mound);
+      const site = { mound, t: 0 };
+      this.addInteractable(mound, {
+        prompt: () => (site.t > g.time ? 'Already dug here (come back later)' : 'Dig here for fossils (needs a pickaxe)'),
+        range: 2.5,
+        action: () => this.#dig(site),
+      });
+    }
+  }
+
+  #lever(p, dx, label, spawn) {
+    const g = this.game;
+    const lever = this.box(0.08, 0.6, 0.08, this.mat({ color: 0xc02020 }), p.x + dx, p.y + 1.1, p.z, { collide: false });
+    lever.rotation.z = dx > 0 ? 0.4 : -0.4;
+    this.addInteractable(lever, {
+      prompt: label,
+      range: 2.6,
+      action: async () => {
+        g.fade.classList.add('on');
+        this.#clank(true);
+        await new Promise((r) => setTimeout(r, 1600));
+        g.player.spawn(this.spawns[spawn]);
+        this.#clank(false);
+        g.fade.classList.remove('on');
+        g.hud.toast(spawn === 'level3' ? 'Level 3. Sixty metres down. You can hear water somewhere, a lot of it.' : 'Back up on level 2.', 3500);
+      },
+    });
+    if (dx > 0) {
+      const bar = this.mat({ color: 0x5a5a60 });
+      for (let k = -2; k <= 2; k++) this.box(0.04, 2.6, 0.04, bar, p.x + k * 0.45, p.y + 1.3, p.z - 1, { collide: false });
+      this.lantern(new THREE.Vector3(p.x, p.y + 3.2, p.z + 1.6));
+    }
+  }
+
+  #dig(site) {
+    const g = this.game;
+    if (site.t > g.time) return;
+    if (!['pickaxe', 'pickaxe_steel', 'pickaxe_diamond'].some((k) => g.inventory.has(k))) return g.hud.toast('You’d need a pickaxe to dig.', 2500);
+    site.t = g.time + 180;
+    site.mound.scale.y = 0.15;
+    setTimeout(() => (site.mound.scale.y = 0.4), 180000);
+    g.camera.userData.shake = 0.05;
+    const all = Object.keys(FOSSILS);
+    const shelf = JSON.parse(localStorage.getItem('3am-fossils') ?? '[]');
+    const unfound = all.filter((f) => !g.inventory.has(`fossil_${f}`) && !shelf.includes(f));
+    if (Math.random() < (unfound.length ? 0.5 : 0.2)) {
+      const f = unfound.length ? unfound[Math.floor(Math.random() * unfound.length)] : all[Math.floor(Math.random() * all.length)];
+      g.inventory.add(`fossil_${f}`);
+      g.hud.toast(`A FOSSIL! ${FOSSILS[f].name}. Put it on the display shelf at home.`, 5000);
+    } else {
+      const junk = ['Just sand and an old bootlace.', 'Rock. Rock. More rock.', 'A rusty nail from 1891. Fascinating, for a nail.', 'You find a smaller rock inside the rock.'];
+      g.hud.toast(junk[Math.floor(Math.random() * junk.length)], 2500);
+      if (Math.random() < 0.3) g.inventory.add('ore_coal');
+    }
+  }
+
+  #rideTrain(dt) {
+    const g = this.game;
+    this.trainV = Math.min(8, this.trainV + 2.5 * dt);
+    this.trainS = THREE.MathUtils.clamp(this.trainS + (this.trainDir * this.trainV * dt) / this.trainLen, 0.02, 0.98);
+    this.trainDirSign = this.trainDir;
+    this.putTrain(this.trainS);
+    const t = this.trainPath.getTangentAt(this.trainS).multiplyScalar(this.trainDir);
+    g.player.position.set(this.train.position.x, this.train.position.y + 0.9, this.train.position.z).addScaledVector(t, -1.2);
+    g.player.yaw = Math.atan2(-t.x, -t.z);
+    this.trainLight.position.copy(this.train.position).addScaledVector(t, 2).setY(this.train.position.y + 1.3);
+    this.chuffT = (this.chuffT ?? 0) - dt * this.trainV;
+    if (this.chuffT <= 0) {
+      this.chuffT = 2.2;
+      this.#chuff();
+    }
+    const end = this.trainDir > 0 ? this.trainS >= 0.98 : this.trainS <= 0.02;
+    if (end) {
+      this.trainRiding = false;
+      g.player.enabled = true;
+      g.player.spawn(this.spawns[this.trainDir > 0 ? 'falls' : 'depot']);
+      this.#whistle();
+      g.hud.toast(this.trainDir > 0 ? 'The underground falls. Walt never wrote about this one. Maybe nobody’s ever seen it.' : 'Back at the depot.', 4500);
+    }
+  }
+
+  #fallsTick() {
+    const g = this.game;
+    if (!this.fallNode) {
+      const ctx = g.audio.ctx;
+      this.fallNode = g.audio.noiseSource(true);
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 700;
+      this.fallGain = ctx.createGain();
+      this.fallGain.gain.value = 0;
+      this.fallNode.connect(lp).connect(this.fallGain).connect(g.audio.master);
+      this.fallNode.start();
+    }
+    const d = g.scene === this ? g.camera.position.distanceTo(this.fallsAt) : 999;
+    this.fallGain.gain.setTargetAtTime(d < 60 ? Math.min(0.5, 9 / (6 + d)) : 0, g.audio.ctx.currentTime, 0.3);
+  }
+
+  onExit() {
+    this.fallGain?.gain.setTargetAtTime(0, this.game.audio.ctx.currentTime, 0.2);
+  }
+
+  #chuff() {
+    const ctx = this.game.audio.ctx;
+    const t = ctx.currentTime;
+    const n = this.game.audio.noiseSource(false);
+    const f = ctx.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.value = 500;
+    const e = ctx.createGain();
+    e.gain.setValueAtTime(0.35, t);
+    e.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    n.connect(f).connect(e).connect(this.game.audio.master);
+    n.start(t);
+    n.stop(t + 0.35);
+  }
+
+  #whistle() {
+    const ctx = this.game.audio.ctx;
+    const t = ctx.currentTime;
+    for (const f of [740, 880, 1110]) {
+      const o = ctx.createOscillator();
+      o.frequency.value = f;
+      const e = ctx.createGain();
+      e.gain.setValueAtTime(0, t);
+      e.gain.linearRampToValueAtTime(0.06, t + 0.1);
+      e.gain.setValueAtTime(0.06, t + 0.9);
+      e.gain.linearRampToValueAtTime(0, t + 1.2);
+      o.connect(e).connect(this.game.audio.master);
+      o.start(t);
+      o.stop(t + 1.3);
+    }
+  }
+
+  // ===========================================================================
   // Walt's journal (lore) + bats
   // ===========================================================================
 
@@ -668,6 +959,8 @@ export class CaveScene extends BaseScene {
   #tick(dt, t) {
     const g = this.game;
     if (this.riding) this.#rideCart(dt);
+    if (this.trainRiding) this.#rideTrain(dt);
+    if (this.fallSound) this.#fallsTick();
     if (this.fire) {
       this.fire.scale.set(1 + Math.sin(t * 13) * 0.1, 1 + Math.sin(t * 17) * 0.2, 1);
     }

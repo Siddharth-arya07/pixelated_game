@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { BaseScene } from './BaseScene.js';
 import { addTV, addMusicDevice, addSeat } from './Devices.js';
+import { signTexture } from '../core/Procedural.js';
 
 /**
  * LighthouseScene
@@ -121,6 +122,36 @@ export class LighthouseScene extends BaseScene {
     this.addLight({ position: [-2.1, 1.0, 2.4], color: 0xffb070, range: 7.5, intensity: 1.4 });
     this.addLight({ position: [0, H - 0.4, -0.5], color: 0xffc890, range: 7, intensity: 0.7 }); // bare bulb
     void lamp;
+
+    // ---- WPHR 3AM: Ray's old radio desk, now a tiny station --------------------------------
+    const desk = this.box(1.3, 0.75, 0.6, this.mat({ map: this.tex('planks', 1, 1), color: 0x6a4a30 }), -3.3, 0.375, -2.6, { rotY: 0.75 });
+    const rig = this.box(0.6, 0.28, 0.3, this.mat({ color: 0x2a2a2e }), -3.35, 0.89, -2.65, { collide: false, rotY: 0.75 });
+    void rig;
+    const dial = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.1), this.mat({ color: 0xffb040, unlit: true }));
+    dial.position.set(-3.2, 0.92, -2.5);
+    dial.rotation.y = 0.75;
+    this.root.add(dial);
+    const micStand = this.place('mic_stand', { x: -3.0, y: 0.75, z: -2.35, rotY: 0.75 + Math.PI });
+    micStand.scale.multiplyScalar(0.3);
+    const lampOff = this.mat({ color: 0x401010 });
+    const lampOn = this.mat({ color: 0xff3020, unlit: true });
+    const onAir = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.24), this.mat({ map: signTexture(['ON AIR'], { bg: '#300808', fg: '#ff5040', w: 64, h: 22 }) }));
+    onAir.position.set(-3.75, 1.9, -3.05);
+    onAir.rotation.y = 0.75;
+    this.root.add(onAir);
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), lampOff);
+    bulb.position.set(-3.75, 2.1, -3.05);
+    this.root.add(bulb);
+    const airLight = this.addLight({ position: [-3.5, 2, -2.8], color: 0xff3020, range: 4, intensity: 0.9, enabled: false });
+    this.addInteractable(desk, {
+      prompt: () => (g.radio.onAir ? 'Go off air (WPHR 3AM)' : 'Go on air — WPHR 3AM (broadcast the music shed + your mic)'),
+      range: 2.6,
+      action: () => g.radio.toggle(),
+    });
+    this.updaters.push(() => {
+      bulb.material = g.radio.onAir ? lampOn : lampOff;
+      airLight.enabled = g.radio.onAir;
+    });
 
     // ---- Ray himself: in his armchair by the stove, waiting to tell you something ----------
     const rx = 2.1;

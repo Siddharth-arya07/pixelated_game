@@ -43,6 +43,7 @@ export class LakeScene extends BaseScene {
     const water = new THREE.Mesh(subdivideCircle(LAKE_R + 0.5, 32, 6), this.mat({ map: this.tex('water', 10), scroll: [0.015, 0.008] }));
     water.position.copy(LAKE_C).setY(WATER_Y);
     this.root.add(water);
+    this.water = water;
     this.addInteractable(water, {
       prompt: 'Cast line',
       range: 18,

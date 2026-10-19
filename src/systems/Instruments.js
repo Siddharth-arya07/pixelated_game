@@ -156,19 +156,20 @@ export class Instruments {
     const obj = this.byKind?.[kind];
     if (!obj) return;
     this.#sound(kind, args, obj);
-    this.game.net?.online && this.game.net.event('note', { kind, a: args });
+    this.game.net?.online && this.game.net.event('note', { kind, a: args, air: this.game.radio?.onAir ? 1 : 0 });
   }
 
   #remote(e, id) {
     const g = this.game;
     const r = g.mp?.remotes.get(id);
     const obj = this.byKind?.[e.kind];
-    if (!obj || !r || !r.inMyScene) return;
-    this.#sound(e.kind, e.a, obj);
+    if (!obj || !r) return;
+    if (r.inMyScene) this.#sound(e.kind, e.a, obj);
+    else if (e.air && g.radio?.tuned) this.#sound(e.kind, e.a, null); // on the radio, wherever you are
   }
 
   #sound(kind, a, obj) {
-    const out = this.#out(obj);
+    const out = obj ? this.#out(obj) : this.game.radio.bus;
     if (kind === 'piano') this.#pianoNote(out, a.m, a.v ?? 0.8, a.off);
     else if (kind === 'guitar') this.#strum(out, a.c, a.dir ?? 1, a.s);
     else if (kind === 'drums') this.#drum(out, a.d);

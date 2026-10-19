@@ -6,6 +6,8 @@ import { addTelescope } from './Telescope.js';
 import { Railway } from './Railway.js';
 import { buildDriveIn } from './DriveIn.js';
 import { buildWishingWell } from './WishingWell.js';
+import { buildBonfire } from './Bonfire.js';
+import { buildBackyard } from './Backyard.js';
 import { BaseScene } from './BaseScene.js';
 import { Terrain } from '../world/Terrain.js';
 import { MAP } from '../world/MapLayout.js';
@@ -73,6 +75,8 @@ export class WorldScene extends BaseScene {
     this.#diner();
     this.#airfield();
     this.#mineEntrance();
+    this.bonfire = buildBonfire(this);
+    this.backyard = buildBackyard(this);
     this.#nature();
     this.#bounds();
     console.info(`[World] built in ${(performance.now() - t0).toFixed(0)} ms`);
@@ -100,6 +104,7 @@ export class WorldScene extends BaseScene {
   #ground() {
     const T = this.terrain;
     const mat = this.mat({ map: this.tex('grass', 1, 1), vertexColors: true });
+    this.terrainMat = mat;
     for (const chunk of T.buildMeshes(mat)) {
       this.root.add(chunk);
       this.addColliderMesh(chunk, 'terrain');

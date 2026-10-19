@@ -10,6 +10,7 @@ const NOTE_TEXT =
   "i know ur going through a lot of stuff rn but from what i can see is ur future is bright and seeing u win will make me more happy than u can imagine, hard times pass and this will pass too\n\nand i like my women in stem ;)";
 import { BaseScene } from './BaseScene.js';
 import { signTexture } from '../core/Procedural.js';
+import { FOSSILS } from './CaveScene.js';
 import { ComputerOS } from '../computer/ComputerOS.js';
 import { addTV, addMusicDevice, addSeat } from './Devices.js';
 
@@ -438,6 +439,7 @@ export class HouseScene extends BaseScene {
     addSeat(this, sofa, { eye: [0.4, 1.02, 2.62], yaw: 0, pitch: -0.1, yawLimit: 1.4, standAt: [1.7, 0, 2.2] }, 'Sit on the couch');
     this.place('plant', { x: -0.9, z: 3.1 });
     this.#coffeeTable();
+    this.#fossilCabinet();
 
     // Vase on the TV cabinet for flowers from the garden.
     const cb = this.bounds(cab);
@@ -768,6 +770,108 @@ export class HouseScene extends BaseScene {
         rodVolume.removeFromParent();
         this.interactables = this.interactables.filter((o) => o !== rodVolume);
         g.hud.toast("Dad's old rod. The lake's at the end of the road.");
+      },
+    });
+  }
+
+  /** A glass display cabinet for fossils dug up on level 3 of the mine. */
+  #fossilCabinet() {
+    const g = this.game;
+    const x = W + 0.3;
+    const z = -0.9;
+    const wood = this.mat({ color: 0x4a3020 });
+    this.box(0.5, 1.6, 1.1, wood, x, 0.8, z);
+    const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.3), this.mat({ color: 0xc8e0f0, opacity: 0.18 }));
+    glass.position.set(x + 0.26, 0.95, z);
+    glass.rotation.y = Math.PI / 2;
+    this.root.add(glass);
+    const label = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.12), this.mat({ map: signTexture(['FOSSILS'], { bg: '#2a1a10', fg: '#d8c090', w: 64, h: 14 }) }));
+    label.position.set(x + 0.27, 1.68, z);
+    label.rotation.y = Math.PI / 2;
+    this.root.add(label);
+    this.addLight({ position: [x + 0.5, 1.3, z], color: 0xffe8c0, range: 2.5, intensity: 0.6 });
+    const shelf = this.mat({ color: 0x6a4a30 });
+    for (const y of [0.45, 0.95, 1.4]) this.box(0.42, 0.03, 1.0, shelf, x + 0.02, y, z, { collide: false });
+    const KEY = '3am-fossils';
+    const load = () => {
+      try {
+        return JSON.parse(localStorage.getItem(KEY) ?? '[]');
+      } catch {
+        return [];
+      }
+    };
+    const shown = new THREE.Group();
+    this.root.add(shown);
+    const slots = [[0.45, -0.3], [0.45, 0.3], [0.95, -0.3], [0.95, 0.3], [1.4, -0.3], [1.4, 0.3]];
+    const make = (f) => {
+      const m = (c, o = {}) => this.mat({ color: c, ...o });
+      const grp = new THREE.Group();
+      if (f === 'ammonite') {
+        const t = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.03, 6, 12), m(0xb8a080));
+        t.rotation.y = Math.PI / 2;
+        grp.add(t);
+      } else if (f === 'trilobite') {
+        for (let k = 0; k < 5; k++) {
+          const seg = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.14 - k * 0.015), m(0x7a6a5a));
+          seg.position.x = (k - 2) * 0.035;
+          grp.add(seg);
+        }
+      } else if (f === 'fern') {
+        const slab = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.02, 0.16), m(0x5a5a58));
+        const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.16, 3), m(0x7a8a5a));
+        leaf.rotation.z = Math.PI / 2;
+        leaf.position.y = 0.02;
+        grp.add(slab, leaf);
+      } else if (f === 'fish') {
+        const slab = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.02, 0.12), m(0x8a7a6a));
+        grp.add(slab);
+        for (let k = 0; k < 6; k++) {
+          const bone = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.01, 0.06), m(0xe0d8c8));
+          bone.position.set(-0.06 + k * 0.022, 0.015, 0);
+          grp.add(bone);
+        }
+      } else if (f === 'tooth') {
+        const c = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.16, 6), m(0xe0d0b0));
+        c.position.y = 0.08;
+        grp.add(c);
+      } else {
+        const a = new THREE.Mesh(new THREE.DodecahedronGeometry(0.06, 0), m(0xe09030, { unlit: true, opacity: 0.85 }));
+        a.position.y = 0.06;
+        grp.add(a);
+      }
+      return grp;
+    };
+    const refresh = () => {
+      shown.clear();
+      load().forEach((f, i) => {
+        const sl = slots[i];
+        if (!sl) return;
+        const o = make(f);
+        o.position.set(x + 0.05, sl[0] + 0.03, z + sl[1]);
+        shown.add(o);
+      });
+    };
+    refresh();
+    this.addInteractable(glass, {
+      prompt: () => {
+        const have = Object.keys(FOSSILS).filter((f) => g.inventory.has(`fossil_${f}`));
+        return have.length ? `Put ${have.length} fossil${have.length > 1 ? 's' : ''} on display` : `Fossil collection (${load().length}/6)`;
+      },
+      range: 2.4,
+      action: () => {
+        const list = load();
+        for (const f of Object.keys(FOSSILS)) {
+          if (g.inventory.has(`fossil_${f}`)) {
+            g.inventory.remove(`fossil_${f}`);
+            if (!list.includes(f)) list.push(f);
+          }
+        }
+        try {
+          localStorage.setItem(KEY, JSON.stringify(list));
+        } catch {}
+        refresh();
+        const lines = list.length ? list.map((f) => `· ${FOSSILS[f].name} — ${FOSSILS[f].desc}`).join('\n\n') : 'Empty shelves. The fossils are down on level 3 of the old mine, past the train line.';
+        g.openUI(() => g.note.show(`THE COLLECTION (${list.length}/6)\n\n${lines}${list.length === 6 ? '\n\nComplete. Somewhere, a museum curator weeps.' : ''}`));
       },
     });
   }

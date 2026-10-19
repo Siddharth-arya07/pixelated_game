@@ -56,7 +56,7 @@ export class Aircraft extends Vehicle {
 
   onEnter() {
     super.onEnter();
-    this.game.hud.toast('SHIFT throttle up · CTRL down · W/S nose up/down · A/D bank · F flares · SPACE brakes · E get out', 7000);
+    this.game.hud.toast('SHIFT throttle up · CTRL down · W/S nose up/down · A/D bank · F flares · R smoke · G drop a care package · B banner · SPACE brakes · E get out', 7000);
   }
 
   onExit() {
@@ -87,6 +87,16 @@ export class Aircraft extends Vehicle {
       rollIn = -input.steer; // D = bank right
       brake = input.handbrake;
       if (k.pressed('KeyF') && !this.onGround) this.#flares();
+      const fx = g.planeFX;
+      if (k.pressed('KeyR')) {
+        this.smokeOn = !this.smokeOn;
+        g.hud.toast(this.smokeOn ? 'Smoke on. Write something in the sky.' : 'Smoke off.', 2000);
+      }
+      if (k.pressed('KeyG') && !this.onGround) fx.dropFrom(this);
+      if (k.pressed('KeyB')) {
+        if (this.bannerText) fx.setBanner(this, null);
+        else fx.askBanner((t) => fx.setBanner(this, t));
+      }
     } else this.throttle = Math.max(0, this.throttle - dt * 0.3);
 
     // ---- airspeed ----------------------------------------------------------------

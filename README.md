@@ -203,6 +203,15 @@ E gets up.
 - **Birds**: gulls round the harbor and lighthouse, crows over the fields, swallows by day, pigeons that scatter.
 - **Ray** at the bottom of the lighthouse tells you a story a night (12 of them). The gallery telescope looks out at the ships in the shipping lane.
 
+- **Seasons** turn every two in-game days (starting from the real one): winter snow, a frozen lake to skate on and a sled on the porch; spring blossom; summer fireflies; autumn leaves.
+- **WPHR 3AM**: go on air at Ray's radio desk in the lighthouse — your instruments and mic reach everyone tuned in (music playing or in a vehicle).
+- **Beach bonfire** south of the harbor: logs to sit on, marshmallow roasting, and Ray on even nights.
+- **Biplane extras**: R smoke, G care-package drop, B towed banner, F flares.
+- **Mine level 3**: repair the old train (valve in the gold room, chain from Pete, 5 coal), ride to the underground falls, dig fossils for the cabinet at home.
+- **Pets**: T throw a stick (dogs fetch), Z teach sit; cats leave gifts on the doorstep. Untamed strays show as paw prints on the map.
+- **Backyard patio** beside the house: arcade cabinets, beer pong, darts, the chug-off, free cooler, a shared Hall of Fame.
+- **Balloon rides** at dawn (5–8 a.m.) from the east end of the airfield; friends can ride in the same basket.
+
 ## The map
 
 1 km², always foggy:
