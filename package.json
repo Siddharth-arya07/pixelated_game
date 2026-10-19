@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "rooms": "wrangler dev --config cloudflare/wrangler.toml --port 1999",
-    "rooms:deploy": "wrangler deploy --config cloudflare/wrangler.toml"
+    "rooms:deploy": "wrangler deploy --config cloudflare/wrangler.toml",
+    "site:deploy": "vite build && sh cloudflare/pages/deploy.sh"
   },
   "dependencies": {
     "three": "^0.186.1",

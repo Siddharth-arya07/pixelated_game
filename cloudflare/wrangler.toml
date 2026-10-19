@@ -1,6 +1,8 @@
 name = "three-am-rooms"
 main = "worker.js"
 compatibility_date = "2025-01-01"
+# Only reachable through the website (/parties/* on three-am-nostalgia.pages.dev)
+workers_dev = false
 
 [[durable_objects.bindings]]
 name = "ROOMS"

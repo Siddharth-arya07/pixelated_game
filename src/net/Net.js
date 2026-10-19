@@ -2,7 +2,8 @@
  * Net
  * ---
  * The connection to a multiplayer room on the Cloudflare Worker (see /cloudflare/worker.js).
- * Plain WebSocket to wss://<host>/parties/main/<room>?_pk=<id>; reconnects with the same id.
+ * Plain WebSocket to wss://<site>/parties/main/<room>?_pk=<id> (the site hands it to the
+ * rooms worker); reconnects with the same id.
  *
  *   net.join(code, { name, char })   → resolves once welcomed
  *   net.send(type, payload)          'state' | 'ev' | 'world' | 'rtc'
@@ -12,7 +13,8 @@
  * Offline (no room) everything is a no-op, so systems can call net.* freely.
  */
 const LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-const HOST = import.meta.env.VITE_ROOMS_HOST || (LOCAL ? 'localhost:1999' : 'three-am-rooms.mannusheoran55.workers.dev');
+// Online, rooms live behind the site itself (/parties/* → rooms worker); locally, wrangler dev.
+const HOST = import.meta.env.VITE_ROOMS_HOST || (LOCAL ? 'localhost:1999' : location.host);
 const PROTO = LOCAL ? 'ws' : 'wss';
 
 export class Net {

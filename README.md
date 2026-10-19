@@ -27,7 +27,11 @@ Touch controls switch on automatically. Play in landscape.
 - **Buttons:** a few buttons appear only when they're useful: USE, the Q action, FIRE/DRAG, AIM, RELOAD/ASH, TOSS, JUMP/BRAKE.
 - **Top bar:** BAG, MAP, LIGHTS/TORCH, RADIO, and ☰ (pause, or ✕ to close a menu).
 
-### Deploy (Netlify)
+### Deploy (Cloudflare Pages)
+
+`npm run site:deploy` builds and publishes to https://three-am-nostalgia.pages.dev. The site is behind a password (any username) set with `npx wrangler pages secret put SITE_PASSWORD --project-name three-am-nostalgia`; multiplayer connects through the site (`/parties/*` → the rooms worker, which has no public URL of its own). See `cloudflare/pages/`.
+
+### Deploy (Netlify, old)
 
 `netlify.toml` is included: build command `npm run build`, publish folder `dist`. The site root is rewritten to the built `src/ui/index.html`. Either:
 - connect the folder or repo in the Netlify UI, or

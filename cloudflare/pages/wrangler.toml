@@ -1,0 +1,10 @@
+# The website on Cloudflare Pages (https://three-am-nostalgia.pages.dev).
+# Deploy: npm run site:deploy  (builds, copies dist/ into ./public, deploys)
+name = "three-am-nostalgia"
+pages_build_output_dir = "public"
+compatibility_date = "2025-01-01"
+
+# Multiplayer goes through the site: /parties/* is handed to the rooms worker.
+[[services]]
+binding = "ROOMS"
+service = "three-am-rooms"

@@ -6,3 +6,6 @@ dist
 
 # personal photos (kept local, still bundled into the deployed site)
 src/assets/photos/
+
+cloudflare/pages/public/
+cloudflare/pages/.wrangler/
