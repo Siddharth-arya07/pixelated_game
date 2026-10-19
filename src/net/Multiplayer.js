@@ -3,6 +3,7 @@ import { Net, newRoomCode } from './Net.js';
 import { Avatar } from './Avatar.js';
 import { Voice } from './Voice.js';
 import { ITEMS } from '../systems/InventorySystem.js';
+import { wishFx } from '../scenes/WishingWell.js';
 
 /**
  * Multiplayer
@@ -126,6 +127,15 @@ export class Multiplayer {
     this.on('hang', (e) => g.scenes.House.built && g.scenes.House.hangPainting(e.slot, e.url, true, true));
     this.on('music', (e, id) => this.#remoteMusic(e, id));
     this.on('tv', (e) => this.game.devices?.get(e.dev)?.setChannel?.(e.ch, e.on));
+    this.on('wish', (e, id) => {
+      if (g.scene?.name !== 'World') return;
+      wishFx(g, e.k, new THREE.Vector3(...e.p));
+      g.hud.toast(`${this.remotes.get(id)?.name ?? 'Someone'} made a wish at the well.`, 3000);
+    });
+    this.on('flash', (e, id) => {
+      const r = this.remotes.get(id);
+      if (r?.inMyScene) g.polaroid.remoteFlash(r.avatar.group.position);
+    });
     this.on('emote', (e, id) => {
       const r = this.remotes.get(id);
       if (r && r.inMyScene && e.a === 'wave') g.hud.toast(`${r.name} waves.`, 1800);
@@ -214,6 +224,7 @@ export class Multiplayer {
       sp: r2(speed),
       it: g.inventory.equipped,
       sm: g.viewModel.smoking ? 1 : 0,
+      pets: g.pets?.netState(),
       fl: g.flashlightOn ? 1 : 0,
       talkLevel: r2(this.voice.level),
       mute: this.voice.muted ? 1 : 0,
@@ -226,7 +237,7 @@ export class Multiplayer {
     if (v) {
       const o = v.object;
       s.a = v.cfg.ollie ? 'skate' : 'drive';
-      s.v = { id: v.id, seat: 0, p: [r2(o.position.x), r2(o.position.y), r2(o.position.z)], h: r2(v.heading), r: [r2(o.rotation.x), r2(o.rotation.z)], spd: r2(v.speed) };
+      s.v = { id: v.id, seat: 0, p: [r2(o.position.x), r2(o.position.y), r2(o.position.z)], h: r2(v.heading), r: [r2(o.rotation.x), r2(o.rotation.z)], spd: r2(v.speed), hl: v.headlightsOn ? 1 : 0 };
     } else if (this.ride) {
       s.a = 'ride';
       s.v = { id: this.ride.veh.id, seat: this.ride.seat };
@@ -247,7 +258,10 @@ export class Multiplayer {
       rail: run ? { dir: run.dir, s: Math.round(run.s) } : null,
       film: W.drivein?.clock,
     };
-    if (full) w.deer = g.hunting.netSnapshot();
+    if (full) {
+      w.deer = g.hunting.netSnapshot();
+      if (g.scenes.Cave?.built) w.ore = g.scenes.Cave.netSnapshot();
+    }
     this.net.send('world', { w });
   }
 
@@ -269,6 +283,10 @@ export class Multiplayer {
     if (w.rail && W.railway && !W.railway.run) W.railway.startRun(w.rail.dir, w.rail.s);
     if (w.film && W.drivein) W.drivein.setClock(w.film);
     if (w.deer) g.hunting.netApply(w.deer);
+    if (w.ore) {
+      if (g.scenes.Cave?.built) g.scenes.Cave.netApply(w.ore);
+      else g.pendingOre = w.ore;
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -294,6 +312,8 @@ export class Multiplayer {
     veh.heading = lerpAngle(veh.heading, v.h, k);
     o.rotation.set(v.r?.[0] ?? 0, veh.heading, v.r?.[1] ?? 0, 'YXZ');
     veh.speed = v.spd ?? 0;
+    if (veh.setHeadlights && !!v.hl !== !!veh.headlightsOn) veh.setHeadlights(!!v.hl);
+    if (veh.prop) veh.prop.rotation.z += g.dtLast * 50;
     veh.engine?.setRPM?.(Math.min(1, Math.abs(veh.speed) / veh.cfg.maxSpeed));
     o.updateMatrixWorld();
   }
@@ -555,10 +575,11 @@ class Remote {
     this.seatedInVehicle = !!veh;
     if (veh) {
       // sit in the vehicle: driver seat or passenger seat i
-      const seat = s.v.seat === 0 ? veh.cfg.seat : veh.cfg.passengers?.[s.v.seat - 1] ?? veh.cfg.seat;
+      const seat = s.v.seat === 0 ? veh.cfg.avatarSeat ?? veh.cfg.seat : veh.cfg.avatarPassengers?.[s.v.seat - 1] ?? veh.cfg.passengers?.[s.v.seat - 1] ?? veh.cfg.seat;
       grp.position.copy(seat).applyMatrix4(veh.object.matrixWorld);
       grp.position.y -= veh.cfg.ollie ? 1.62 : 1.15;
       grp.rotation.set(0, veh.heading, 0);
+      if (veh.cfg.fly) grp.quaternion.copy(veh.object.quaternion);
       if (s.v.seat !== 0) s.a = s.a === 'skate' ? 'skate' : 'ride';
     } else {
       grp.position.set(s.p[0], s.p[1], s.p[2]);

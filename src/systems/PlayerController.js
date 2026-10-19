@@ -140,7 +140,7 @@ export class PlayerController {
     }
 
     // Kill-plane safety net.
-    if (this.position.y < -20) this.game.respawn();
+    if (this.position.y < (scene.killY ?? -20)) this.game.respawn();
   }
 
   #step(dt, scene) {

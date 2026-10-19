@@ -38,11 +38,16 @@ export class Stargazing {
     this.zoomIndex = 0;
     g.player.sit({ eye: def.eye, yaw: def.yaw, pitch: 0.5, yawLimit: Math.PI, standAt: def.standAt, onStand: () => this.#leave() });
     this.lens.classList.remove('hidden');
+    if (def.sea) {
+      g.farBoost = 1500;
+      return g.hud.toast('Out at sea: the shipping lane. Scroll or Q to zoom · centre a ship to read its name · E to step back', 5000);
+    }
     g.hud.toast(g.dayNight.isDaylight ? 'Not much to see in daylight. Come back at night.' : 'Scroll or Q to zoom · click a star · E to step back', 4000);
   }
 
   #leave() {
     const g = this.game;
+    if (this.scope?.sea) g.farBoost = 0;
     this.scope = null;
     g.fovOverride = null;
     g.lookScale = 1;
@@ -76,7 +81,7 @@ export class Stargazing {
     } else if (this.scope) this.#leave();
 
     // Click to identify (anything outside at night; telescopes too).
-    const busy = g.uiOpen || g.focus || g.fishing.active || g.vehicle.active || g.hunting.equipped || g.viewModel.smoking || g.inventory.equipped === 'polaroid' || g.inventory.equipped === 'jar';
+    const busy = g.uiOpen || g.focus || g.fishing.active || g.vehicle.active || g.hunting.equipped || g.viewModel.smoking || g.inventory.equipped === 'polaroid' || g.inventory.equipped === 'jar' || !!g.mining?.pick;
     if (!busy && scene.outdoor && g.input.locked && g.input.mousePressed(0) && !g.interaction.focus) {
       const dir = g.camera.getWorldDirection(_dir);
       const fovRad = (g.camera.fov * Math.PI) / 180;

@@ -41,6 +41,24 @@ export class DinerJob {
     this.#ui();
     this.#props(passAt, cardAt);
     scene.updaters.push((dt) => this.update(dt));
+    // friends' customers show up at their tables too (they serve them, not you)
+    this.ghosts = new Map();
+    this.game.mp?.on('diner', (e) => this.#remote(e));
+  }
+
+  #remote(e) {
+    const t = this.tables[e.t];
+    if (!t) return;
+    if (e.op === 'arrive' && !t.cust && !this.ghosts.has(e.t)) {
+      const fig = person(this.scene, REGULARS[e.r].look);
+      fig.position.set(t.seat.x, this.fy, t.seat.z);
+      fig.rotation.y = t.face;
+      this.scene.root.add(fig);
+      this.ghosts.set(e.t, fig);
+    } else if (e.op === 'leave') {
+      this.ghosts.get(e.t)?.removeFromParent();
+      this.ghosts.delete(e.t);
+    }
   }
 
   // ---- props: the HELP WANTED card and the pick-up window -------------------------------------
@@ -150,7 +168,7 @@ export class DinerJob {
     const g = this.game;
     if (g.scene !== this.scene) return this.#end();
     this.spawnT -= dt;
-    const free = this.tables.filter((t) => !t.cust);
+    const free = this.tables.filter((t) => !t.cust && !this.ghosts.has(this.tables.indexOf(t)));
     if (this.spawnT <= 0 && free.length && this.customers.length < 3 && this.served + this.customers.length < 8) {
       this.spawnT = 14 + Math.random() * 16;
       this.#arrive(free[Math.floor(Math.random() * free.length)]);
@@ -205,6 +223,7 @@ export class DinerJob {
     const cu = { def, fig, bubble, table: t, state: 'order', patience: 60, maxPatience: 60, bob: Math.random() * 6 };
     t.cust = cu;
     this.customers.push(cu);
+    this.game.net?.online && this.game.net.event('diner', { op: 'arrive', t: this.tables.indexOf(t), r: REGULARS.indexOf(def) });
     s.addInteractable(fig, {
       prompt: () => ({ order: `Take ${def.name}’s order`, cooking: `${def.name} is waiting on the kitchen`, ready: `${def.name}’s food is in the window`, carrying: `Serve ${def.name}`, eating: `${def.name} is eating` })[cu.state],
       range: 2.4,
@@ -246,6 +265,7 @@ export class DinerJob {
     cu.fig.removeFromParent();
     s.interactables = s.interactables.filter((o) => o !== cu.fig);
     cu.table.cust = null;
+    this.game.net?.online && this.game.net.event('diner', { op: 'leave', t: this.tables.indexOf(cu.table) });
     this.customers = this.customers.filter((c) => c !== cu);
     this.#platesVisual();
     if (!quiet) this.game.audio.oneShot('door', { volume: 0.15, rate: 1.2 });

@@ -134,6 +134,7 @@ export class Polaroid {
 
   update(dt) {
     const g = this.game;
+    for (let k = this.lights.length - 1; k >= 0; k--) if ((this.lights[k].t -= dt) <= 0) this.lights.splice(k, 1);
     const input = g.input;
     if (input.pressed('KeyK') && !g.focus && (this.visible || !g.uiOpen) && g.inventory.has('polaroid')) {
       if (this.visible) g.closeUI();
@@ -159,7 +160,20 @@ export class Polaroid {
       input.consumeMouse(0);
       this.#shoot();
     }
-    for (let k = this.lights.length - 1; k >= 0; k--) if ((this.lights[k].t -= dt) <= 0) this.lights.splice(k, 1);
+  }
+
+  /** A friend took a photo nearby: their flash lights the room for a moment. */
+  remoteFlash(p) {
+    this.lights.push({ position: p.clone().setY(p.y + 1.6), color: new THREE.Color(0xf4f6ff), range: 9, intensity: 1.4, enabled: true, priority: 9, t: 0.12 });
+    const ctx = this.game.audio.ctx;
+    const t = ctx.currentTime;
+    const n = this.game.audio.noiseSource(false);
+    const e = ctx.createGain();
+    e.gain.setValueAtTime(0.15, t);
+    e.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+    n.connect(e).connect(this.game.audio.master);
+    n.start(t);
+    n.stop(t + 0.08);
   }
 
   #setZoom(z) {
@@ -183,6 +197,7 @@ export class Polaroid {
     const L = { position: g.camera.position.clone(), color: new THREE.Color(0xf4f6ff), range: 9, intensity: 1.2, enabled: true, priority: 9, t: 0.12 };
     this.lights.push(L);
     this.#shutterSound();
+    g.net?.online && g.net.event('flash', {});
     g.captureNext = (canvas) => {
       const film = FILMS[this.film];
       const img = this.#develop(canvas, film.id);

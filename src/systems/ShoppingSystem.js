@@ -69,6 +69,19 @@ export const CATALOGS = {
       { id: 'lighter', price: 0.99 },
     ],
   },
+  assay: {
+    name: 'ASSAY OFFICE — OLD PETE',
+    stock: [
+      { id: 'pickaxe', price: 8, unique: true },
+      { id: 'pickaxe_steel', price: 45, unique: true },
+      { id: 'pickaxe_diamond', price: 160, unique: true },
+      { id: 'miner_helmet', price: 12, unique: true },
+      { id: 'coffee', price: 1 },
+    ],
+    buysCatch: true,
+    sellBonus: 1.25, // Pete pays the best price for ore
+    sellLabel: 'SELL TO PETE (+25% on ore)',
+  },
   diner: {
     name: 'SEAVIEW DINER — OPEN 24 HRS',
     stock: [
@@ -140,9 +153,20 @@ export class ShoppingSystem {
     const inv = this.game.inventory;
     const def = ITEMS[id];
     if (!inv.has(id) || !def?.value) return 'Nothing to sell';
+    const cat = CATALOGS[this.current];
+    const price = Math.round(def.value * (id.startsWith('ore_') ? cat?.sellBonus ?? 1 : 1) * 100) / 100;
     inv.remove(id);
-    inv.earn(def.value);
+    inv.earn(price);
     this.game.audio.oneShot('register', { volume: 0.6 });
-    return `Sold ${def.name} for $${def.value.toFixed(2)}. "Uh... thanks?"`;
+    return `Sold ${def.name} for $${price.toFixed(2)}. ${cat?.sellBonus ? '"Good rock, that."' : '"Uh... thanks?"'}`;
+  }
+
+  /** Sell every sellable thing at once. */
+  sellAll() {
+    let n = 0;
+    let total = this.game.inventory.money;
+    for (const it of this.sellable()) for (let k = 0; k < it.count; k++, n++) this.sell(it.id);
+    total = this.game.inventory.money - total;
+    return n ? `Sold ${n} things for $${total.toFixed(2)}.` : 'Nothing to sell';
   }
 }

@@ -98,6 +98,21 @@ export const MODELS = {
   train: {}, // native metres: 2 cars, 54 m, along Z
   skateboard: { fit: { length: 0.82 }, rotateX: -Math.PI / 2, rotateZ: -Math.PI / 2 }, // modelled standing on its tail, on its side
   telescope: { fit: { height: 1.55 } },
+  // --- Pets, birds, Ray, ships, the mine (Quaternius CC0 · Kay Lousberg CC0 · Alex Safayan CC-BY 3.0) ---
+  dog_shiba: { fit: { height: 0.62 } },
+  dog_husky: { fit: { height: 0.78 } },
+  cat: { fit: { height: 0.36 } },
+  pigeon: { fit: { height: 0.3 } },
+  bat: { fit: { length: 0.55 } },
+  ray: { fit: { height: 1.74 } },
+  cruise_ship: { fit: { length: 150 } },
+  container_ship: { fit: { length: 170 } },
+  sail_ship: { fit: { length: 42 } },
+  pickaxe: { fit: { length: 0.75 } },
+  minecart: { fit: { length: 1.4 } },
+  lantern: { fit: { height: 0.42 } },
+  // Stylized WW1 plane (supplied by the user)
+  plane: { fit: { length: 8.5 } },
   // native metres; an interior built with inward-facing walls and soft alpha:
   // keep both faces, no alpha cut-out, no affine swim on the big wall polys
   char_girl: { fit: { height: 1.65 } },

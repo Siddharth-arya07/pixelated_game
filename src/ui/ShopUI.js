@@ -54,10 +54,18 @@ export class ShopUI {
       const sellable = this.shop.sellable();
       const head = document.createElement('div');
       head.className = 'shop-section';
-      head.textContent = sellable.length ? 'SELL YOUR CATCH' : 'BRING FISH — THE CLERK BUYS THEM';
+      head.textContent = sellable.length ? this.catalog.sellLabel ?? 'SELL YOUR CATCH' : this.catalog.sellLabel ? 'BRING ORE — PETE BUYS IT' : 'BRING FISH — THE CLERK BUYS THEM';
       this.list.appendChild(head);
+      const bonus = (id) => (id.startsWith('ore_') ? this.catalog.sellBonus ?? 1 : 1);
+      if (sellable.length > 1) {
+        const total = sellable.reduce((a, it) => a + it.value * bonus(it.id) * it.count, 0);
+        this.#row('Everything', 'All of it, in one go.', `+$${total.toFixed(2)}`, 'Sell all', false, () => {
+          this.msg.textContent = this.shop.sellAll();
+          this.render?.();
+        });
+      }
       for (const it of sellable) {
-        this.#row(`${it.name} x${it.count}`, 'Clerk shrugs.', `+$${it.value.toFixed(2)}`, 'Sell', false, () => {
+        this.#row(`${it.name} x${it.count}`, this.catalog.sellBonus ? 'Pete squints at it.' : 'Clerk shrugs.', `+$${(it.value * bonus(it.id)).toFixed(2)}`, 'Sell', false, () => {
           this.msg.textContent = this.shop.sell(it.id);
         });
       }

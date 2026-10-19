@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { buildTruckCab } from '../vehicles/TruckCab.js';
 import { GroundVehicle } from '../vehicles/GroundVehicle.js';
 import { Watercraft } from '../vehicles/Watercraft.js';
+import { Aircraft } from '../vehicles/Aircraft.js';
 
 /**
  * VehicleSystem
@@ -167,6 +168,23 @@ export const VEHICLES = [
     lightAt: new THREE.Vector3(0, 1.1, 1.3),
     lightRange: 6,
     engine: { base: 0.8, range: 2.0 },
+  },
+  {
+    id: 'plane',
+    type: Aircraft,
+    model: 'plane',
+    label: 'biplane',
+    prompt: 'Climb into the biplane',
+    fly: true,
+    maxSpeed: 55,
+    // chase camera (the cockpit is full of struts); avatars sit in the real seats
+    seat: new THREE.Vector3(0, 4.6, -8.5),
+    passengers: [new THREE.Vector3(0.8, 4.4, -8.0)],
+    avatarSeat: new THREE.Vector3(0, 2.35, -1.5),
+    avatarPassengers: [new THREE.Vector3(0, 2.3, -0.3)],
+    engine: { base: 0.3, range: 1.6 },
+    interactRange: 6,
+    lookLimit: 2.4,
   },
 ];
 

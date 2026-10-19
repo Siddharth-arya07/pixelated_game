@@ -71,6 +71,8 @@ export class WorldScene extends BaseScene {
     this.railway = new Railway(this);
     this.drivein = buildDriveIn(this, this.poi.drivein);
     this.#diner();
+    this.#airfield();
+    this.#mineEntrance();
     this.#nature();
     this.#bounds();
     console.info(`[World] built in ${(performance.now() - t0).toFixed(0)} ms`);
@@ -87,7 +89,8 @@ export class WorldScene extends BaseScene {
     // waves (computed in world space) never swim.
     const cam = this.game.camera.position;
     this.sea.position.set(Math.round(cam.x / 4) * 4, 0, Math.round(cam.z / 4) * 4);
-    this.sea.visible = cam.x > 180;
+    this.sea.visible = cam.x > 180 || (this.game.farBoost ?? 0) > 100;
+    this.sea.scale.setScalar((this.game.farBoost ?? 0) > 100 ? 8 : 1);
   }
 
   // ---------------------------------------------------------------------------
@@ -366,6 +369,126 @@ export class WorldScene extends BaseScene {
     });
     // a couple of parked cars' worth of empty lot + a sign at the road
     this.#sign(['SEAVIEW DINER', 'OPEN 24 HRS ->'], p.x + 12, p.z + 16, Math.PI, { bg: '#1a3a4a' });
+  }
+
+  /**
+   * Pine Hollow Airfield: a mown grass strip running east–west, a tin hangar,
+   * a windsock and edge lights. The biplane parks at the west end, facing
+   * down the runway.
+   */
+  #airfield() {
+    const g = this.game;
+    const A = this.poi.airfield;
+    const y0 = A.y;
+    const L = 130;
+    const W = 16;
+    const strip = new THREE.Mesh(new THREE.PlaneGeometry(L, W, 26, 4), this.mat({ map: this.tex('grass', 8, 1), color: 0xb8c890 }));
+    strip.rotation.x = -Math.PI / 2;
+    strip.position.set(A.x, y0 + 0.04, A.z);
+    this.root.add(strip);
+    const chalk = this.mat({ color: 0xe8e8e0 });
+    for (let x = -L / 2 + 8; x < L / 2 - 6; x += 9) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(4, 0.4), chalk);
+      m.rotation.x = -Math.PI / 2;
+      m.position.set(A.x + x, y0 + 0.06, A.z);
+      this.root.add(m);
+    }
+    // threshold numbers 09 / 27
+    for (const [x, txt, rot] of [[-L / 2 + 4, '09', -Math.PI / 2], [L / 2 - 4, '27', Math.PI / 2]]) {
+      const c = document.createElement('canvas');
+      c.width = 64;
+      c.height = 64;
+      const k = c.getContext('2d');
+      k.fillStyle = '#e8e8e0';
+      k.font = 'bold 44px monospace';
+      k.textAlign = 'center';
+      k.fillText(txt, 32, 48);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), this.mat({ map: new THREE.CanvasTexture(c), opacity: 0.9 }));
+      m.rotation.x = -Math.PI / 2;
+      m.rotation.z = rot;
+      m.position.set(A.x + x, y0 + 0.07, A.z);
+      this.root.add(m);
+    }
+    // edge lights (glow at night)
+    const lamp = this.mat({ color: 0xffe0a0, unlit: true });
+    for (let x = -L / 2; x <= L / 2; x += 13) {
+      for (const dz of [-W / 2, W / 2]) {
+        const b = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.25, 0.18), lamp);
+        b.position.set(A.x + x, y0 + 0.12, A.z + dz);
+        this.root.add(b);
+      }
+    }
+    // hangar: corrugated walls + a rounded roof, open to the runway
+    const hx = A.x - 34;
+    const hz = A.z - 26;
+    const tin = this.mat({ map: this.tex('siding', 4, 1), color: 0x9aa0a8 });
+    this.box(0.2, 5, 14, tin, hx - 9, y0 + 2.5, hz);
+    this.box(0.2, 5, 14, tin, hx + 9, y0 + 2.5, hz);
+    this.box(18, 5, 0.2, tin, hx, y0 + 2.5, hz - 7);
+    const roof = new THREE.Mesh(new THREE.CylinderGeometry(9.2, 9.2, 14.2, 16, 1, true, -Math.PI / 2, Math.PI), this.mat({ color: 0x7a8088, doubleSide: true }));
+    roof.rotation.x = Math.PI / 2;
+    roof.rotation.z = Math.PI / 2;
+    roof.scale.set(1, 1, 0.35);
+    roof.position.set(hx, y0 + 5, hz);
+    this.root.add(roof);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(6, 1.1), this.mat({ map: signTexture(['PINE HOLLOW AIRFIELD'], { bg: '#1a2a4a', fg: '#f0e0a0', w: 192, h: 32 }) }));
+    sign.position.set(hx, y0 + 6.3, hz + 7.15);
+    this.root.add(sign);
+    this.addLight({ position: [hx, y0 + 4.2, hz + 3], color: 0xffd8a0, range: 14, intensity: 1.1 });
+    for (let i = 0; i < 3; i++) this.place('cardboard_box', { x: hx - 6 + i * 0.7, y: y0, z: hz - 5.5, rotY: i, collide: true });
+    // windsock on a pole: swings with the wind
+    const wx = A.x + 20;
+    const wz = A.z - 14;
+    this.box(0.12, 6, 0.12, this.mat({ color: 0xd8d8d8 }), wx, y0 + 3, wz, { collide: false });
+    const sock = new THREE.Mesh(new THREE.ConeGeometry(0.45, 2.4, 10, 1, true), this.mat({ color: 0xff7a20, doubleSide: true }));
+    sock.geometry.rotateX(-Math.PI / 2);
+    sock.geometry.translate(0, 0, 1.2);
+    sock.position.set(wx, y0 + 5.8, wz);
+    this.root.add(sock);
+    this.updaters.push((dt, t) => {
+      const w = g.weather.wind;
+      sock.rotation.y = 0.8 + Math.sin(t * 0.3) * 0.4 * w;
+      sock.rotation.x = 0.9 - w * 0.8 + Math.sin(t * 3) * 0.05;
+    });
+    this.#sign(['AIRFIELD', 'NO JOYRIDES', '(please)'], A.x - L / 2 - 6, A.z + 12, -Math.PI / 2, { bg: '#2a3a5a' });
+    this.addSpawn('plane_park', [A.x - L / 2 + 10, y0, A.z], Math.PI / 2); // facing east, down the strip
+    this.addSpawn('airfield', [A.x - L / 2 + 10, y0, A.z + 8], Math.PI); // beside the plane
+  }
+
+  /** The old silver mine: a timbered portal in the mountainside, rails running out of it. */
+  #mineEntrance() {
+    const g = this.game;
+    const M = this.poi.mine;
+    const x = M.x;
+    const z = M.z - 9;
+    const y = this.groundHeight(x, z);
+    const timber = this.mat({ map: this.tex('planks', 1, 1), color: 0x6a4a2e });
+    const rock = this.mat({ map: this.tex('rock', 3, 2), color: 0x7a7068 });
+    // the hillside it's cut into + the dark hole
+    this.box(16, 10, 6, rock, x, y + 4.5, z - 3.4);
+    const hole = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.4), this.mat({ color: 0x050403, unlit: true }));
+    hole.position.set(x, y + 1.7, z - 0.38);
+    this.root.add(hole);
+    for (const dx of [-1.8, 1.8]) this.box(0.4, 3.8, 0.4, timber, x + dx, y + 1.9, z, { collide: true });
+    this.box(4.4, 0.45, 0.5, timber, x, y + 3.9, z);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 0.7), this.mat({ map: signTexture(['PINE HOLLOW SILVER MINE · 1891'], { bg: '#3a2414', fg: '#f0d890', w: 224, h: 40 }) }));
+    sign.position.set(x, y + 4.5, z + 0.3);
+    this.root.add(sign);
+    // rails out of the portal, a parked cart, barrels, a lantern
+    for (let k = 0; k < 8; k++) {
+      const sl = this.box(1.5, 0.08, 0.22, this.mat({ color: 0x3a2a1c }), x, y + 0.04, z + 1 + k * 1.2, { collide: false });
+      void sl;
+    }
+    for (const dx of [-0.45, 0.45]) this.box(0.07, 0.08, 9.6, this.mat({ color: 0x5a5a60 }), x + dx, y + 0.12, z + 5.2, { collide: false });
+    this.place('minecart', { x, y, z: z + 7, rotY: Math.PI / 2, collide: true });
+    this.place('lantern', { x: x + 1.8, y: y + 3.0, z: z + 0.35 });
+    this.addLight({ position: [x + 1.8, y + 3, z + 0.8], color: 0xffa860, range: 9, intensity: 1.2, flicker: 0.12 });
+    this.interactVolume(x, y + 1.7, z - 0.2, 3.2, 3.4, 1.0, {
+      prompt: 'Enter the old mine',
+      action: () => g.changeScene('Cave', 'entrance'),
+    });
+    this.addSpawn('mine_door', [x, y, z + 3], Math.PI);
+    this.#sign(['OLD MINE', 'TOURS: NEVER', 'ASSAY OFFICE: OPEN'], x + 6, z + 8, 0, { bg: '#4a3420' });
   }
 
   /** The music shed beside the house (inside: StudioScene). Door faces south. */
@@ -727,6 +850,8 @@ export class WorldScene extends BaseScene {
       yawLimit: 2.2,
       standAt: [ax + 2.5, dy, az - 0.8],
     });
+    // A brass telescope on the gallery, pointed at the shipping lane.
+    addTelescope(this, ax + 1.9, dy, az - 2.2, -Math.PI / 2 + 0.15, new THREE.Vector3(ax + 1.2, dy, az - 1.4), { sea: true });
     this.#sign(['KEEP OFF', 'CLIFF EDGE'], L.x + 16, L.z + 14, Math.PI * 0.75, { bg: '#d8b020', fg: '#101010' });
     this.place('log', { x: L.x + 12, y: L.y, z: L.z + 8, rotY: 0.4, scale: 0.6, collide: true });
   }
@@ -750,12 +875,12 @@ export class WorldScene extends BaseScene {
     const half = MAP.size / 2 - 10;
     let trees = 0;
     // Trees: dense on the mountain flanks, sparse in the valley.
-    for (let i = 0; i < 38000 && trees < 7000; i++) {
+    for (let i = 0; i < 60000 && trees < 10500; i++) {
       const x = (rand() * 2 - 1) * half;
       const z = (rand() * 2 - 1) * half;
       const y = T.heightAt(x, z);
       if (y < 2.5 || T.slopeAt(x, z) > 0.4) continue;
-      const density = z < -40 ? 0.97 : 0.6;
+      const density = z < -40 ? 0.98 : 0.72;
       if (rand() > density || !ok(x, z, 8)) continue;
       const kind = z < -60 || y > 30 ? (rand() < 0.55 ? 'tree_pine' : 'tree_pine2') : rand() < 0.5 ? 'tree_oak' : 'tree_pine2';
       const s = 0.7 + rand() * 0.6;

@@ -34,6 +34,12 @@ import { Fireworks } from '../systems/Fireworks.js';
 import { Meteors } from '../systems/Meteors.js';
 import { Fireflies } from '../systems/Fireflies.js';
 import { DreamScene } from '../scenes/DreamScene.js';
+import { CaveScene } from '../scenes/CaveScene.js';
+import { Pets } from '../systems/Pets.js';
+import { Birds } from '../systems/Birds.js';
+import { Ships } from '../systems/Ships.js';
+import { Mining } from '../systems/Mining.js';
+import { RayUI } from '../ui/RayUI.js';
 import { Polaroid } from '../systems/Polaroid.js';
 import { BookUI } from '../ui/BookUI.js';
 import { CookingSystem } from '../systems/CookingSystem.js';
@@ -138,6 +144,11 @@ export class Game {
     this.fireworks = new Fireworks(this);
     this.meteors = new Meteors(this);
     this.fireflies = new Fireflies(this);
+    this.pets = new Pets(this);
+    this.birds = new Birds(this);
+    this.ships = new Ships(this);
+    this.mining = new Mining(this);
+    this.rayUI = new RayUI(this);
     this.polaroid = new Polaroid(this);
     this.book = new BookUI(this);
     this.weather = new WeatherSystem(this);
@@ -152,14 +163,18 @@ export class Game {
       Diner: new DinerScene(this),
       Studio: new StudioScene(this),
       Dream: new DreamScene(this),
+      Cave: new CaveScene(this),
     };
     // Vehicles start parked: truck + bike at the house, boat + jet ski at the pier.
     const world = this.scenes.World;
     world.ensureBuilt();
     this.hunting.setupWorld(world);
+    this.pets.setupWorld(world);
+    this.birds.setupWorld(world);
+    this.ships.setupWorld(world);
     const place = (id, spawn) => {
       const sp = world.spawns[spawn];
-      const y = this.vehicles.get(id).kind === 'ground' ? world.groundHeight(sp.position.x, sp.position.z) : 0;
+      const y = this.vehicles.get(id).kind !== 'water' ? world.groundHeight(sp.position.x, sp.position.z) : 0;
       this.vehicles.get(id).park('World', { position: sp.position.clone().setY(y), yaw: sp.yaw });
     };
     place('truck', 'truck_home');
@@ -167,6 +182,7 @@ export class Game {
     place('skateboard', 'skate_home');
     place('boat', 'boat_mooring');
     place('jetski', 'jetski_mooring');
+    place('plane', 'plane_park');
 
     // ---- title card → play --------------------------------------------------
     text.textContent = 'ready';
@@ -286,7 +302,7 @@ export class Game {
   }
 
   get uiOpen() {
-    return this.inventoryUI.visible || this.shopUI.visible || this.walkman?.visible || this.journal?.visible || this.paint?.visible || this.note?.visible || this.book?.visible || this.polaroid?.visible;
+    return this.inventoryUI.visible || this.shopUI.visible || this.walkman?.visible || this.journal?.visible || this.paint?.visible || this.note?.visible || this.book?.visible || this.polaroid?.visible || this.pets?.visible || this.rayUI?.visible;
   }
 
   openUI(fn) {
@@ -301,6 +317,8 @@ export class Game {
     this.paint.hide();
     this.note.hide();
     this.book.hide();
+    this.pets.hide();
+    this.rayUI.hide();
     this.polaroid.hide();
     if (this.shopUI.visible) this.shopping.close();
     this.input.requestLock();
@@ -486,6 +504,11 @@ export class Game {
     this.fireworks.update(dt);
     this.meteors.update(dt);
     this.fireflies.update(dt);
+    this.pets.update(dt);
+    this.birds.update(dt);
+    this.ships.update(dt);
+    this.mining.update(dt);
+    this.rayUI.update(dt);
     this.hunger.update(dt);
     this.stargazing.update(dt);
     this.mp.update(dt);
@@ -507,7 +530,9 @@ export class Game {
       this.hud.setSpeed(v.speed, v.speed < -0.1 ? 'R' : 'D');
       const smoke = this.viewModel.smoking ? ' · LMB drag' : '';
       this.hud.setHint(
-        v.kind === 'water'
+        v.kind === 'air'
+          ? `SHIFT/CTRL throttle ${Math.round(v.throttle * 100)}% · W/S nose down/up · A/D bank · SPACE brakes · alt ${Math.round(v.altitude)} m · E get out`
+          : v.kind === 'water'
           ? `W/S throttle · A/D steer · MOUSE look${smoke} · E get off at the dock`
           : v.cfg.ollie
             ? `W push · A/D carve · S slow down · SPACE ollie · MOUSE look${smoke} · E step off`
@@ -517,6 +542,7 @@ export class Game {
       this.hud.setSpeed(null);
       let hint = this.mp.ride ? `riding with ${this.mp.ride.veh.remoteName ?? 'them'} · MOUSE look · E hop off` : `WASD move · SHIFT run · E interact · I inventory${this.inventory.equipped === 'flashlight' ? ' · L flashlight' : ''}`;
       if (this.fishing.active) hint = 'LMB cast / reel · E or RMB stop fishing';
+      else if (this.mining.pick) hint = `LMB swing the pickaxe${this.scene?.name === 'Cave' ? ' at ore veins' : ''} · E interact · I inventory`;
       else if (this.inventory.equipped === 'jar') hint = `LMB catch a firefly (${this.fireflies.jar}/20 in the jar) · E interact · I inventory`;
       else if (this.polaroid.equipped) hint = 'LMB take photo · Q / scroll film · RMB zoom · K album · X put away';
       else if (this.viewModel.smoking) hint = `HOLD LMB drag · R flick ash · G toss${this.player.seated ? ' · E stand' : ' · WASD move'}`;
@@ -593,6 +619,7 @@ export class Game {
     let far = Math.max(40, this.renderer.shared.uFogFar.value + 18);
     // Sky shows (fireworks, shooting stars) live well past the fog wall.
     if (this.fireworks.n || this.meteors.list.length || this.meteors.watching) far = Math.max(far, 420);
+    if (this.ships.wantFar) far = Math.max(far, (this.farBoost ?? 0) > 1000 ? 1700 : 1100);
     if (Math.abs(this.camera.far - far) > 1) {
       this.camera.far = far;
       this.camera.updateProjectionMatrix();
@@ -600,7 +627,7 @@ export class Game {
     this.camera.updateMatrixWorld();
 
     // Lights: scene lights + vehicles + flashlight + ember
-    const lights = scene.lights.concat(this.vehicle.activeLights(scene), this.viewModel.lights, this.hunting.lights, this.fireworks.lights, this.polaroid.lights, this.fireflies.lights);
+    const lights = scene.lights.concat(this.vehicle.activeLights(scene), this.viewModel.lights, this.hunting.lights, this.fireworks.lights, this.polaroid.lights, this.fireflies.lights, this.mining.lights);
     if (this.flashlightOn && this.inventory.equipped === 'flashlight' && !this.vehicle.driving) {
       this.camera.getWorldDirection(_dir);
       _flash.position.copy(this.camera.position).addScaledVector(_dir, 2.5);

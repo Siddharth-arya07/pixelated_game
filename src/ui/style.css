@@ -595,3 +595,28 @@ body.touch #room { top: calc(48px + env(safe-area-inset-top)); font-size: 14px; 
 .jb-row em { display: block; height: 3px; background: #3a2a24; margin-top: 2px; }
 .jb-row em i { display: block; height: 100%; background: #e0a050; }
 .jb-foot { font-size: 14px; color: #c8b898; margin-top: 6px; border-top: 1px solid #4a3a30; padding-top: 4px; }
+
+/* ---------------- Pets: naming ---------------- */
+#petname { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000a; pointer-events: auto; }
+#petname.hidden { display: none; }
+.pn-card { background: #f4ecd8; color: #2a2018; padding: 22px 26px; width: min(420px, 88vw); box-shadow: 6px 8px 0 #0008; font-family: 'Caveat', cursive; font-size: 24px; text-align: center; }
+.pn-card input { display: block; width: 100%; margin: 14px 0; font: 30px 'Caveat', cursive; text-align: center; border: 0; border-bottom: 2px solid #8a6a4a; background: transparent; outline: none; color: #2a2a5a; }
+.pn-card button { font-family: var(--pixel); font-size: 18px; padding: 4px 16px; background: #2a2420; color: #f0e6d0; border: 0; cursor: pointer; }
+
+/* ---------------- Ray's stories ---------------- */
+#ray { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at 30% 60%, #3a2410e0, #000e 70%); pointer-events: auto; cursor: pointer; }
+#ray.hidden { display: none; }
+.ry-card { width: min(640px, 92vw); max-height: 86vh; overflow-y: auto; color: #f0e2c4; font-family: 'EB Garamond', Georgia, serif; font-size: clamp(17px, 2.4vh, 21px); line-height: 1.55; padding: 10px 6px; }
+.ry-who { font-family: var(--pixel); font-size: 16px; letter-spacing: 3px; color: #c89a60; }
+.ry-title { font-size: 1.5em; font-style: italic; margin: 4px 0 14px; color: #ffe8b8; }
+.ry-text p { margin: 0 0 0.9em; }
+.ry-foot { margin-top: 18px; font-family: var(--pixel); font-size: 15px; color: #a89070; }
+.ry-foot span { margin-right: 10px; }
+.ry-foot button { font-family: var(--pixel); font-size: 16px; margin: 6px 6px 0 0; padding: 4px 12px; background: #2a1c10; color: #f0d8a8; border: 1px solid #8a6a40; cursor: pointer; }
+
+/* ---------------- Ship label (gallery telescope) ---------------- */
+#shiplabel { position: absolute; left: 50%; bottom: 18%; transform: translateX(-50%); text-align: center; font-family: var(--pixel); color: #e8f0ff; text-shadow: 0 0 4px #000, 1px 1px 0 #000; pointer-events: none; }
+#shiplabel.hidden { display: none; }
+#shiplabel b { display: block; font-size: 24px; letter-spacing: 1px; }
+#shiplabel span { display: block; font-size: 16px; color: #c8d8f0; }
+#shiplabel i { display: block; font-style: normal; font-size: 14px; color: #8aa0c0; margin-top: 2px; }

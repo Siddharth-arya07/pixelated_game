@@ -122,6 +122,28 @@ export class LighthouseScene extends BaseScene {
     this.addLight({ position: [0, H - 0.4, -0.5], color: 0xffc890, range: 7, intensity: 0.7 }); // bare bulb
     void lamp;
 
+    // ---- Ray himself: in his armchair by the stove, waiting to tell you something ----------
+    const rx = 2.1;
+    const rz = -0.4;
+    const rayChair = this.place('chair', { x: rx, z: rz, rotY: -Math.PI / 2 - 0.25, collide: 0.1 });
+    void rayChair;
+    const ray = this.place('ray', { x: rx, y: 0, z: rz });
+    ray.rotation.y = Math.atan2(-0.9 - rx, 0.9 - rz); // toward the good chair
+    const clips = (ray.userData.animations ?? []).map((c) => c.name);
+    const sit = clips.find((n) => /sit/i.test(n));
+    if (sit) {
+      this.animate(ray, sit);
+    } else {
+      this.animate(ray, clips.find((n) => /idle/i.test(n)) ?? clips[0]);
+      ray.position.x += 0.35; // standing by the chair instead
+    }
+    this.addInteractable(ray, {
+      prompt: 'Sit with Ray (he has a story)',
+      range: 3,
+      action: () => g.rayUI.open(),
+    });
+    this.addLight({ position: [rx, 1.6, rz], color: 0xffb070, range: 4, intensity: 0.6 });
+
     // ---- sound -----------------------------------------------------------------------------
     this.addSound('fluorescent_hum', new THREE.Vector3(2.6, H - 0.2, 2.6), { volume: 0.12, refDistance: 1.5 }); // lens motor
     let horn = 3;

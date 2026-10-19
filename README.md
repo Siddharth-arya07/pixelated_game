@@ -191,6 +191,14 @@ E gets up.
 
 **Fishing**: equip the rod. Look at the lake or the sea (from the pier) and press E. Hold the mouse button and release to cast; click when it bites, then hold to reel and release to ease the tension.
 
+## New places & things
+
+- **Pine Hollow Airfield** (east of the drive-in): the biplane. SHIFT/CTRL throttle, W/S nose down/up, A/D bank, SPACE brakes, E get out on the ground. Land too hard (or in the sea) and it gets towed back. Friends can ride in the back seat.
+- **The old silver mine** (foot of the mountain): two levels, minecart line, cage lift, a crystal grotto with an underground lake. Take the old pickaxe and helmet at the entrance, LMB veins to mine, sell ore to Old Pete (+25%). Better picks break harder rock. Find Walt's five journal pages.
+- **Pets**: a shiba (behind your house), a husky (harbor), two cats (diner, lighthouse). Feed them three times (dogs: meat/burgers/pizza, cats: fish) to tame and name them. E pet, Q stay/come.
+- **Birds**: gulls round the harbor and lighthouse, crows over the fields, swallows by day, pigeons that scatter.
+- **Ray** at the bottom of the lighthouse tells you a story a night (12 of them). The gallery telescope looks out at the ships in the shipping lane.
+
 ## The map
 
 1 km², always foggy:
@@ -277,6 +285,11 @@ Bundled models (converted with `tools/blender_export.py`; textures embedded, hea
 | [Realistic Deer](https://sketchfab.com/3d-models/realistic-deer-76039b75cdc0492a80680c2404725496) | pighunt3r15 | **CC-BY 4.0** |
 | [Beretta A400 xtreme plus 12ga](https://sketchfab.com/3d-models/beretta-a400-xtreme-plus-12ga-green-9867d2d0caed44baa0833365adc00374) | geyges | **Sketchfab Standard** (use in your game; don't redistribute the model on its own) |
 | [Cyberpunk bike](https://sketchfab.com/3d-models/cyberpunk-bike-efcf679a115c487face1adc2ce7e8b8c) | daCruz | **CC-BY-NC 4.0 (non-commercial only)** |
+| Drum Kit, Acoustic Guitar, Piano, Microphone | smoj, Dave, jeremy, Poly by Google via Poly Pizza | **CC-BY 3.0** |
+| Shiba Inu, Husky, Cat, Pigeon, Bat, Pirate Captain (Ray), Cruise Ship, Sail Ship, Stone Pickaxe, Minecart | Quaternius via Poly Pizza | CC0 |
+| Hanging Lantern | Kay Lousberg via Poly Pizza | CC0 |
+| [Container Ship](https://poly.pizza/m/3AmDGcCu6Ll) | Alex Safayan via Poly Pizza | **CC-BY 3.0** |
+| Stylized WW1 plane | supplied by the project owner | (check the source's licence before publishing) |
 
 CC-BY means the credit above (and on the title screen) must stay with the game. **The bike is non-commercial only**: replace it before selling or monetising the game. The cigarette pack shows a real brand; that's fine for a personal project, but swap it for the procedural "Marlowe" pack (delete `src/assets/models/cigarette_pack.glb`) before publishing.
 

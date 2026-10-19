@@ -93,39 +93,35 @@ function plink(g) {
   o.stop(t + 0.7);
 }
 
+/** The visible/audible part of a wish (also played for friends in the room). */
+export function wishFx(g, k, at) {
+  if (k === 'star') g.meteors.spawn(true);
+  else if (k === 'flies') {
+    const F = g.fireflies;
+    const c = at.clone().add(new THREE.Vector3(0, 0.6, 0));
+    for (let i = 0; i < 40; i++) F.released.push({ p: c.clone(), v: new THREE.Vector3((Math.random() - 0.5) * 1.5, 0.8 + Math.random() * 1.6, (Math.random() - 0.5) * 1.5), t: 0 });
+    if (F.points.parent !== g.scene.root) g.scene.root.add(F.points);
+  } else if (k === 'heart') g.fireworks.light('fw_heart', at.clone().add(new THREE.Vector3(3, 0, -3)), 1);
+  else if (k === 'music') musicBox(g);
+  else if (k === 'shower') for (let i = 0; i < 6; i++) setTimeout(() => g.meteors.spawn(i === 5), i * 350);
+}
+
 function grant(g, at) {
   const night = g.meteors.dark;
   const options = [
-    night && (() => {
-      g.meteors.spawn(true);
-      g.hud.toast('A shooting star, right on cue. Your wish is on its way.', 4500);
-    }),
-    night && (() => {
-      const F = g.fireflies;
-      const c = at.clone().add(new THREE.Vector3(0, 0.6, 0));
-      for (let i = 0; i < 40; i++) F.released.push({ p: c.clone(), v: new THREE.Vector3((Math.random() - 0.5) * 1.5, 0.8 + Math.random() * 1.6, (Math.random() - 0.5) * 1.5), t: 0 });
-      if (F.points.parent !== g.scene.root) g.scene.root.add(F.points);
-      g.hud.toast('Fireflies spill up out of the well like it was full of them.', 4500);
-    }),
-    () => {
-      g.fireworks.light('fw_heart', at.clone().add(new THREE.Vector3(3, 0, -3)), 1);
-      g.hud.toast('Something fizzes in the grass behind the well…', 3500);
-    },
-    () => {
-      g.inventory.earn(5);
-      g.hud.toast('You reach into your pocket and find a crumpled $5 you don’t remember. Thanks, well.', 4500);
-    },
-    () => {
-      musicBox(g);
-      g.hud.toast('From somewhere down in the well: a music box, playing just for a moment.', 4500);
-    },
-    () => g.hud.toast(pick(['The well says nothing. That’s how you know it’s listening.', 'You don’t say the wish out loud. That’s important.', 'Somewhere, someone you love just smiled for no reason.', 'It’s going to be okay. The well is pretty sure.']), 5000),
-    night && g.meteors.shower && (() => {
-      for (let i = 0; i < 6; i++) setTimeout(() => g.meteors.spawn(i === 5), i * 350);
-      g.hud.toast('Six shooting stars at once. That has to count for something.', 4500);
-    }),
+    night && ['star', 'A shooting star, right on cue. Your wish is on its way.'],
+    night && ['flies', 'Fireflies spill up out of the well like it was full of them.'],
+    ['heart', 'Something fizzes in the grass behind the well…'],
+    ['money', 'You reach into your pocket and find a crumpled $5 you don’t remember. Thanks, well.'],
+    ['music', 'From somewhere down in the well: a music box, playing just for a moment.'],
+    ['quiet', pick(['The well says nothing. That’s how you know it’s listening.', 'You don’t say the wish out loud. That’s important.', 'Somewhere, someone you love just smiled for no reason.', 'It’s going to be okay. The well is pretty sure.'])],
+    night && g.meteors.shower && ['shower', 'Six shooting stars at once. That has to count for something.'],
   ].filter(Boolean);
-  pick(options)();
+  const [k, text] = pick(options);
+  if (k === 'money') g.inventory.earn(5);
+  wishFx(g, k, at);
+  g.hud.toast(text, 4500);
+  g.net?.online && g.net.event('wish', { k, p: [at.x, at.y, at.z] });
 }
 
 function musicBox(g) {

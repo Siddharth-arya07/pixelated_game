@@ -107,6 +107,21 @@ JOBS = [
     ("guitar", "user/guitar.glb", {"ratio": 0.3, "tex": 256}),
     ("piano", "user/piano.glb", {"tex": 256}),
     ("mic_stand", "user/mic.glb", {"tex": 256}),
+    ("plane", "user/stylized_ww1_plane.glb", {"drop_prefix": ["pCube12"], "drop": "Tooner", "join": {"prop": ["pCube1_Blur_effect_0", "pCube4_Blur_effect_0"]}, "ratio": 0.6, "tex": 256}),
+    # Quaternius via Poly Pizza (CC0): pets, pigeon, bat, captain (Ray), cruise ship, sail ship, pickaxe, minecart
+    ("dog_shiba", "user/shiba.glb", {"tex": 256}),
+    ("dog_husky", "user/husky.glb", {"tex": 256}),
+    ("cat", "user/cat.glb", {"tex": 256}),
+    ("pigeon", "user/pigeon.glb", {"ratio": 0.5, "tex": 128}),
+    ("bat", "user/bat.glb", {"ratio": 0.5, "tex": 128}),
+    ("ray", "user/captain.glb", {"ratio": 0.35, "tex": 256}),
+    ("cruise_ship", "user/cruise_ship.glb", {"tex": 256}),
+    ("sail_ship", "user/sail_ship.glb", {"ratio": 0.5, "tex": 256}),
+    ("pickaxe", "user/pickaxe.glb", {"tex": 128}),
+    ("minecart", "user/minecart.glb", {"tex": 128}),
+    # Kay Lousberg via Poly Pizza (CC0): hanging lantern · Alex Safayan (CC-BY 3.0): container ship
+    ("lantern", "user/lantern.glb", {"tex": 128}),
+    ("container_ship", "user/container_ship.glb", {"tex": 256}),
     ("skateboard", "user/skateboard.glb", {"ratio": 0.2, "tex": 128}),
     ("telescope", "user/telescope.glb", {"ratio": 0.1, "tex": 256}),
     ("diner", "user/restaurant_in_the_evening.glb", {"ratio": 0.45, "ratio_above": 4000, "tex": 512}),
@@ -168,6 +183,34 @@ def apply_options(opts):
                 mod.decimate_type = "DISSOLVE"
                 mod.angle_limit = planar
                 mod.delimit = {"UV", "MATERIAL", "SEAM"}
+    for pre in opts.get("drop_prefix", []):
+        for ob in list(bpy.data.objects):
+            if ob.name.startswith(pre):
+                bpy.data.objects.remove(ob, do_unlink=True)
+    groups = opts.get("join")
+    if groups is not None:
+        # Merge into a few named meshes (fewer draw calls); named groups keep
+        # their own node (e.g. a propeller to spin), everything else -> "body".
+        taken = set()
+        for gname, names in list(groups.items()) + [("body", None)]:
+            obs = [o for o in bpy.data.objects if o.type == "MESH" and o.name not in taken and (names is None or o.name in names)]
+            if not obs:
+                continue
+            bpy.ops.object.select_all(action="DESELECT")
+            for o in obs:
+                o.select_set(True)
+            bpy.context.view_layer.objects.active = obs[0]
+            bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+            bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+            if len(obs) > 1:
+                bpy.ops.object.join()
+            j = bpy.context.view_layer.objects.active
+            j.name = gname
+            bpy.ops.object.origin_set(type="ORIGIN_GEOMETRY", center="BOUNDS")
+            taken.add(gname)
+        for ob in list(bpy.data.objects):
+            if ob.type == "EMPTY":
+                bpy.data.objects.remove(ob, do_unlink=True)
     ratio = opts.get("ratio")
     only_above = opts.get("ratio_above", 0)  # only decimate meshes heavier than this (tris)
     if ratio:
