@@ -67,6 +67,8 @@ export class Phone {
       ['sky', '☾ Sky tonight'],
       ['calendar', '▦ Calendar'],
       ['pets', '🐾 Pets'],
+      ['people', '☺ People'],
+      ['sealog', '≈ Sea Log'],
     ];
     this.#render('PINE-PHONE', apps.map(([k, l]) => `<button class="ph-btn" data-go="${k}">${l}</button>`).join(''));
   }
@@ -252,6 +254,25 @@ export class Phone {
     } catch {}
     this.game.holidays?.refresh();
     this.go_calendar();
+  }
+
+  go_people() {
+    const g = this.game;
+    const rows = (g.town?.list() ?? []).map(({ d, hearts, quest }) => `<div class="ph-line"><b>${esc(d.name)}</b> ${'♥'.repeat(hearts)}${'♡'.repeat(10 - hearts)}<br><small>${esc(d.blurb)}${quest === 1 ? ' · favour in progress' : quest === 2 ? ' · helped ✓' : ''}</small></div>`);
+    this.#render('PEOPLE', rows.join('') || '<div class="ph-dim">Nobody yet.</div>');
+  }
+
+  go_sealog() {
+    const g = this.game;
+    const life = g.scenes.Sea?.constructor?.SEA_LIFE ?? null;
+    let log = {};
+    try {
+      log = JSON.parse(localStorage.getItem('3am-sealog') ?? '{}');
+    } catch {}
+    const all = window.__seaLife ?? life ?? {};
+    const keys = Object.keys(all);
+    const rows = keys.map((k) => (log[k] ? `<div class="ph-line">✓ ${esc(all[k])}</div>` : `<div class="ph-dim">? ??? — not yet seen</div>`));
+    this.#render(`SEA LOG ${Object.keys(log).length}/${keys.length}`, rows.join('') || '<div class="ph-dim">Go diving! (Dive shop at the harbor.)</div>');
   }
 
   go_pets() {

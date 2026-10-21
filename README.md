@@ -220,6 +220,9 @@ E gets up.
 - **Phone (O)**: text friends, call Ray or Dolores (pizza delivery), weather, moon phase, calendar (preview holidays), pets.
 - **Holidays** by the real date: Halloween (pumpkins, trick-or-treat at the neighbours), Christmas (lights, tree, presents, white Christmas), New Year's Eve (midnight fireworks over the harbor).
 
+- **The people of Pine Hollow**: ten residents with routines (Doug & Pepper, Mrs. Ortega, the Okafor twins, Officer Pete, Joyce, June, Lou, Marguerite, Nova). Talk daily, give gifts, help with their favours; friendship hearts in the phone's People app. They show on the map.
+- **Diving**: gear from the dive shop at the harbor, then the pier ladder (or X from the stopped boat). Shallows, kelp forest, coral reef, the wreck of the Margaret Rose, an air-pocket cave, the deep trench with mantas, jellies and a singing whale. Hold F to fill your Sea Log. No monsters.
+
 ## The map
 
 1 km², always foggy:
@@ -310,6 +313,10 @@ Bundled models (converted with `tools/blender_export.py`; textures embedded, hea
 | Shiba Inu, Husky, Cat, Pigeon, Bat, Pirate Captain (Ray), Cruise Ship, Sail Ship, Stone Pickaxe, Minecart | Quaternius via Poly Pizza | CC0 |
 | Hanging Lantern | Kay Lousberg via Poly Pizza | CC0 |
 | [Container Ship](https://poly.pizza/m/3AmDGcCu6Ll) | Alex Safayan via Poly Pizza | **CC-BY 3.0** |
+| Townspeople (10 animated characters), reef fish, whale, manta, dolphin, sea chest | Quaternius via Poly Pizza | CC0 |
+| Shipwreck | Kenney | CC0 |
+| Coral reef set | MiniPoly | CC0 |
+| Turtle, jellyfish, octopus, seahorse, starfish, crab, urchin, shell, coral, kelp | Poly by Google via Poly Pizza | **CC-BY 3.0** |
 | Stylized WW1 plane | supplied by the project owner | (check the source's licence before publishing) |
 
 CC-BY means the credit above (and on the title screen) must stay with the game. **The bike is non-commercial only**: replace it before selling or monetising the game. The cigarette pack shows a real brand; that's fine for a personal project, but swap it for the procedural "Marlowe" pack (delete `src/assets/models/cigarette_pack.glb`) before publishing.

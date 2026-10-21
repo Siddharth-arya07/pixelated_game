@@ -8,7 +8,7 @@ import { MAP } from '../world/MapLayout.js';
  * draw it plus a "you are here" arrow. Indoors the arrow sits on the
  * building you're in. The game keeps running while the map is open.
  */
-const INDOOR = { House: 'house', GroceryStore: 'gasStation', Lighthouse: 'lighthouse', Lake: 'lakeExit', Diner: 'diner', Studio: 'house', Cave: 'mine', Bowling: 'bowling' };
+const INDOOR = { House: 'house', GroceryStore: 'gasStation', Lighthouse: 'lighthouse', Lake: 'lakeExit', Diner: 'diner', Studio: 'house', Cave: 'mine', Bowling: 'bowling', Sea: 'harbor' };
 const LABELS = [
   ['house', 'HOME'],
   ['gasStation', 'QUIK MART'],
@@ -186,6 +186,15 @@ export class MapUI {
       ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.stroke();
     }
     ctx.restore();
+    // townspeople who are out and about
+    for (const m of g.town?.markers() ?? []) {
+      const [mx, mz] = this.#px(m.x, m.z);
+      ctx.fillStyle = '#c05a2a';
+      ctx.fillRect(mx - 2, mz - 2, 4, 4);
+      ctx.font = '9px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(m.name, mx, mz - 5);
+    }
     // strays you haven't won over yet (paw prints)
     for (const m of g.pets?.mapMarkers() ?? []) {
       const [mx, mz] = this.#px(m.x, m.z);

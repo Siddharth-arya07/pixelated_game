@@ -210,7 +210,13 @@ export class Polaroid {
         g.inventory.remove('polaroid_film');
       }
       const src = img.toDataURL('image/jpeg', 0.86);
-      this.photos.unshift({ src, t: Date.now(), film: film.id });
+      const meta = { src, t: Date.now(), film: film.id };
+      const W = g.scenes.World;
+      if (g.scene === W && W.lantern) {
+        const v = W.lantern.clone().project(g.camera);
+        if (v.z < 1 && Math.abs(v.x) < 0.8 && Math.abs(v.y) < 0.9 && g.camera.position.distanceTo(W.lantern) < 450) meta.lighthouse = true;
+      }
+      this.photos.unshift(meta);
       if (this.photos.length > KEEP) this.photos.length = KEEP;
       this.#save();
       this.#eject(src);

@@ -86,6 +86,17 @@ export const CATALOGS = {
     sellBonus: 1.25, // Pete pays the best price for ore
     sellLabel: 'SELL TO PETE (+25% on ore)',
   },
+  dive: {
+    name: 'DIVE SHOP — HARBOR',
+    stock: [
+      { id: 'dive_mask', price: 25, unique: true },
+      { id: 'tank_big', price: 40, unique: true },
+      { id: 'tank_twin', price: 95, unique: true },
+      { id: 'dive_light', price: 18, unique: true },
+    ],
+    buysCatch: true,
+    sellLabel: 'SELL YOUR FINDS',
+  },
   diner: {
     name: 'SEAVIEW DINER — OPEN 24 HRS',
     stock: [

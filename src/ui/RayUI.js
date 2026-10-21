@@ -42,6 +42,18 @@ export class RayUI {
   /** Open with tonight's story (or the one a friend is hearing). */
   open() {
     const g = this.game;
+    if (g.inventory.has('letter_ray')) {
+      g.inventory.remove('letter_ray');
+      if (g.town) {
+        g.town.flags.rayLetter = true;
+        g.town.saveFlags();
+      }
+      return g.openUI(() => g.note.show('Ray turns the envelope over. “Ortega.” He reads it twice. Puts it in his shirt pocket, over his heart.\n\n“Sixty years that woman’s been telling me my tea is too strong.” He’s smiling.\n\n“Tell her… tell her it’s still too strong.”'));
+    }
+    if (g.inventory.has('lucy_bottle')) {
+      g.inventory.remove('lucy_bottle');
+      return g.openUI(() => g.note.show('Ray goes very still. “Where did you—”\n\nHe reads Lucy’s note, and then his own handwriting underneath, and laughs, a real one, the first time you’ve heard it.\n\n“Thirty years, that bottle. Went all the way round and came home.”\n\nHe props it on the windowsill next to the second cup of tea.'));
+    }
     const night = g.dayNight.day;
     let i = this.pending;
     this.pending = null;

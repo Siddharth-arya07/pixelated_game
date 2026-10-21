@@ -714,12 +714,43 @@ export class WorldScene extends BaseScene {
     for (let i = 0; i < 4; i++) this.place('cardboard_box', { x: shackX + 4 + (i % 2) * 0.6, y: sy + Math.floor(i / 2) * 0.5, z: shackZ + 2 + (i % 2) * 0.3, rotY: i, collide: true });
     this.#sign(['HARBOR', 'NO WAKE'], h.x - 8, h.z + 10, -Math.PI / 2, { bg: '#1e3a5a' });
 
+    // Dive shop: a stall by the shack (rents gear, buys what you bring up), and a ladder at the pier end.
+    const g = this.game;
+    const dsx = h.x + 8;
+    const dsz = h.z - 9;
+    const dsy = this.groundHeight(dsx, dsz);
+    this.box(2.4, 1.0, 0.8, this.mat({ color: 0x2a6a9a }), dsx, dsy + 0.5, dsz);
+    const dsSign = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.6), this.mat({ map: signTexture(['DIVE SHOP', 'RENTALS · NO SHARKS'], { bg: '#0a3a5a', fg: '#8af0ff' }) }));
+    dsSign.position.set(dsx, dsy + 2.0, dsz - 0.2);
+    this.root.add(dsSign);
+    for (const dx of [-1.1, 1.1]) this.box(0.08, 2.2, 0.08, this.mat({ color: 0x5a5a5a }), dsx + dx, dsy + 1.1, dsz - 0.2, { collide: false });
+    const diver = this.place('npc_worker', { x: dsx, y: dsy, z: dsz - 0.9, rotY: 0 });
+    this.animate(diver, 'Idle');
+    this.addInteractable(diver, {
+      prompt: 'Dive shop (gear · sell shells, pearls, coins)',
+      range: 3,
+      action: () => {
+        g.hud.toast(['“Mask, fins, tank. And breathe slow — it all lasts longer.”', '“No sharks out there. Just a very nosy octopus.”', '“The wreck’s south of the pier. The whale comes by most nights.”'][Math.floor(Math.random() * 3)], 3500);
+        g.openUI(() => g.shopping.open('dive'));
+      },
+    });
+    const ladderX = x1 - 1.2;
+    this.box(0.5, 2.6, 0.1, this.mat({ color: 0x8a8a8a }), ladderX, deck - 1.1, z + 1.55, { collide: false });
+    this.interactVolume(ladderX, deck + 0.5, z, 1.4, 1.2, 3, {
+      prompt: () => (g.inventory.has('dive_mask') ? 'Dive in (into the bay)' : 'Too cold to swim without gear — the dive shop rents it'),
+      action: () => {
+        if (!g.inventory.has('dive_mask')) return g.hud.toast('You need a mask & fins from the dive shop by the shack.', 3000);
+        g.audio.oneShot('splash', { volume: 0.8 });
+        g.changeScene('Sea', 'pier');
+      },
+    });
+    this.addSpawn('dive_out', [ladderX - 1.5, deck, z], -Math.PI / 2);
+
     // The shack is Harbor Fish Co.: the night window buys fish and venison,
     // paying 25% more than the Quik Mart clerk.
     const shopSign = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.8), this.mat({ map: signTexture(['HARBOR FISH CO.', 'WE BUY FISH & GAME'], { bg: '#5a2a1a' }), affine: 0 }));
     shopSign.position.set(shackX + 1.2, sy + 2.6, shackZ + 2.53);
     this.root.add(shopSign);
-    const g = this.game;
     const inv = g.inventory;
     const RATE = 1.25;
     const haul = () => inv.list().filter((i) => i.catch && i.value > 0);

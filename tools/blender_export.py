@@ -122,6 +122,41 @@ JOBS = [
     # Kay Lousberg via Poly Pizza (CC0): hanging lantern · Alex Safayan (CC-BY 3.0): container ship
     ("lantern", "user/lantern.glb", {"tex": 128}),
     ("container_ship", "user/container_ship.glb", {"tex": 256}),
+    # Townspeople: Quaternius via Poly Pizza (CC0)
+    ("npc_woman1", "user/npc_woman1.glb", {"ratio": 0.45, "anims": ["Idle", "Walk", "Wave", "Interact", "Sitting", "SitIdle", "Clapping", "Standing", "Working"]}),
+    ("npc_woman2", "user/npc_woman2.glb", {"tex": 256, "anims": ["Idle", "Walk", "Wave", "Interact", "Sitting", "SitIdle", "Clapping", "Standing", "Working"]}),
+    ("npc_woman3", "user/npc_woman3.glb", {"ratio": 0.45, "anims": ["Idle", "Walk", "Wave", "Interact", "Sitting", "SitIdle", "Clapping", "Standing", "Working"]}),
+    ("npc_woman4", "user/npc_woman4.glb", {"anims": ["Idle", "Walk", "Wave", "Interact", "Sitting", "SitIdle", "Clapping", "Standing", "Working"]}),
+    ("npc_man", "user/npc_man.glb", {"anims": ["Idle", "Walk", "Wave", "Interact", "Sitting", "SitIdle", "Clapping", "Standing", "Working"]}),
+    ("npc_dress", "user/npc_dress.glb", {"anims": ["Idle", "Walk", "Wave", "Interact", "Sitting", "SitIdle", "Clapping", "Standing", "Working"]}),
+    ("npc_casual", "user/npc_casual.glb", {"ratio": 0.45, "anims": ["Idle", "Walk", "Wave", "Interact", "Sitting", "SitIdle", "Clapping", "Standing", "Working"]}),
+    ("npc_hoodie", "user/npc_hoodie.glb", {"ratio": 0.45, "anims": ["Idle", "Walk", "Wave", "Interact", "Sitting", "SitIdle", "Clapping", "Standing", "Working"]}),
+    ("npc_worker", "user/npc_worker.glb", {"ratio": 0.45, "anims": ["Idle", "Walk", "Wave", "Interact", "Sitting", "SitIdle", "Clapping", "Standing", "Working"]}),
+    ("npc_human", "user/npc_human.glb", {"anims": ["Idle", "Walk", "Wave", "Interact", "Sitting", "SitIdle", "Clapping", "Standing", "Working"]}),
+    # Sea life: Quaternius (CC0) fish/whale/manta/dolphin/chest · Kenney (CC0) shipwreck · MiniPoly (CC0) reef set
+    # Poly by Google via Poly Pizza (CC-BY 3.0): turtle, jellyfish, octopus, seahorse, starfish, crab, urchin, shell, coral, kelp
+    ("sea_clownfish", "user/clownfish.glb", {"anims": ["Swimming_Normal"]}),
+    ("sea_zebrafish", "user/zebrafish.glb", {"anims": ["Swimming_Normal"]}),
+    ("sea_mandarin", "user/mandarin.glb", {"anims": ["Swimming_Normal"]}),
+    ("sea_butterflyfish", "user/butterflyfish.glb", {"anims": ["Swimming_Normal"]}),
+    ("sea_tang", "user/tang.glb", {"anims": ["Swimming_Normal"]}),
+    ("sea_whale", "user/whale.glb", {}),
+    ("sea_manta", "user/manta.glb", {}),
+    ("sea_dolphin", "user/dolphin.glb", {}),
+    ("sea_turtle", "user/turtle.glb", {"ratio": 0.4}),
+    ("sea_jelly", "user/jellyfish.glb", {"ratio": 0.35}),
+    ("sea_octopus", "user/octopus.glb", {"tex": 128}),
+    ("sea_seahorse", "user/seahorse.glb", {"tex": 128}),
+    ("sea_starfish", "user/starfish.glb", {"tex": 128}),
+    ("sea_crab", "user/crab.glb", {"tex": 128}),
+    ("sea_urchin", "user/urchin.glb", {"tex": 128}),
+    ("sea_shell", "user/shell.glb", {"tex": 128}),
+    ("sea_coral", "user/coral1.glb", {"tex": 128}),
+    ("sea_coral2", "user/coral2.glb", {"ratio": 0.12}),
+    ("sea_kelp", "user/kelp.glb", {"tex": 128}),
+    ("sea_reef", "user/reefset.glb", {"tex": 128}),
+    ("sea_wreck", "user/wreck.glb", {}),
+    ("sea_chest", "user/chest.glb", {"ratio": 0.2, "tex": 256}),
     ("skateboard", "user/skateboard.glb", {"ratio": 0.2, "tex": 128}),
     ("telescope", "user/telescope.glb", {"ratio": 0.1, "tex": 256}),
     ("diner", "user/restaurant_in_the_evening.glb", {"ratio": 0.45, "ratio_above": 4000, "tex": 512}),
@@ -183,6 +218,12 @@ def apply_options(opts):
                 mod.decimate_type = "DISSOLVE"
                 mod.angle_limit = planar
                 mod.delimit = {"UV", "MATERIAL", "SEAM"}
+    keep_anims = opts.get("anims")
+    if keep_anims:
+        # only keep the clips we use (characters ship with 20+)
+        for act in list(bpy.data.actions):
+            if not any(k in act.name for k in keep_anims):
+                bpy.data.actions.remove(act)
     for pre in opts.get("drop_prefix", []):
         for ob in list(bpy.data.objects):
             if ob.name.startswith(pre):
