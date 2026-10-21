@@ -153,6 +153,13 @@ export class LighthouseScene extends BaseScene {
       airLight.enabled = g.radio.onAir;
     });
 
+    // ---- the keeper's logbook: take Ray's shift ------------------------------------------------
+    const logbook = this.box(0.32, 0.06, 0.24, this.mat({ color: 0x3a2418 }), -3.15, 0.79, -2.35, { collide: false, rotY: 0.75 });
+    this.addInteractable(logbook, {
+      prompt: () => (g.keeper.on ? 'Keeper’s logbook (shift in progress)' : 'Keeper’s logbook — take Ray’s shift tonight'),
+      action: () => g.keeper.start(),
+    });
+
     // ---- Ray himself: in his armchair by the stove, waiting to tell you something ----------
     const rx = 2.1;
     const rz = -0.4;

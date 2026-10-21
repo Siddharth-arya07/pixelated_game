@@ -671,3 +671,7 @@ body.touch #room { top: calc(48px + env(safe-area-inset-top)); font-size: 14px; 
 .dv-o2 i { display: block; height: 100%; background: #6ae0ff; }
 .dv-txt { font-size: 16px; }
 .dv-scan { font-size: 15px; color: #9affd0; margin-top: 40vh; }
+#keeper { position: absolute; left: 14px; top: 64px; width: min(300px, 70vw); font-family: var(--pixel); color: #f0e6d0; background: #10141ed8; border: 1px solid #5a6a8a; padding: 8px 10px; pointer-events: none; }
+#keeper.hidden { display: none; }
+#keeper .jb-row em { display: block; height: 4px; background: #2a2a3a; margin-top: 2px; }
+#keeper .jb-row em i { display: block; height: 100%; }

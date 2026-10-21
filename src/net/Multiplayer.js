@@ -266,6 +266,8 @@ export class Multiplayer {
       if (g.scenes.Cave?.built) w.ore = g.scenes.Cave.netSnapshot();
       if (g.balloon.t0) w.balloon = g.balloon.t0;
       w.tree = g.scenes.World.treehouse?.netSnapshot();
+      if (g.rocket?.t0) w.rocket = g.rocket.t0;
+      if (g.keeper?.on) w.keeper = { spring: g.keeper.spring, soot: g.keeper.soot, logged: [...g.keeper.logged] };
       if (g.scenes.World.funland?.on) w.fun = 1;
     }
     this.net.send('world', { w });
@@ -291,6 +293,13 @@ export class Multiplayer {
     if (w.deer) g.hunting.netApply(w.deer);
     if (w.balloon && !g.balloon.t0) g.balloon.t0 = w.balloon;
     if (w.tree) W.treehouse?.netApply(w.tree);
+    if (w.rocket && !g.rocket.t0) g.rocket.t0 = w.rocket;
+    if (w.keeper && !g.keeper.on) {
+      this.handlers.get('keeper')?.({ op: 'start' });
+      g.keeper.spring = w.keeper.spring;
+      g.keeper.soot = w.keeper.soot;
+      for (const n of w.keeper.logged) g.keeper.logged.add(n);
+    }
     if (w.fun && W.funland && !W.funland.on) this.handlers.get('funland')?.({});
     if (w.ore) {
       if (g.scenes.Cave?.built) g.scenes.Cave.netApply(w.ore);

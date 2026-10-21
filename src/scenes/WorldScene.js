@@ -843,9 +843,16 @@ export class WorldScene extends BaseScene {
     }
     this.root.add(this.beams);
     this.beamLight = this.addLight({ position: this.lantern.clone(), color: 0xfff0c8, range: 18, intensity: 1.0, priority: 2 });
-    this.updaters.push((_dt, t) => {
-      const a = t * 0.6;
+    this.beamMat = beamMat;
+    this.gallery = { ax, az, y: L.y + this.deckH };
+    this.beamA = 0;
+    this.updaters.push((dt) => {
+      // the keeper's shift can slow the lamp (clockwork running down) and dim it (soot)
+      const k = g.keeper;
+      this.beamA += dt * 0.6 * (k?.speed ?? 1);
+      const a = this.beamA;
       this.beams.rotation.y = a;
+      beamMat.uniforms.uOpacity && (beamMat.uniforms.uOpacity.value = 0.09 * (k?.bright ?? 1));
       // A pool of light that rides the beam across the cliff top.
       this.beamLight.position.set(ax - Math.cos(a) * 12, L.y + 2, az + Math.sin(a) * 12);
     });

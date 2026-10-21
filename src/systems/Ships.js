@@ -89,9 +89,12 @@ export class Ships {
         if (_v.z < 1 && Math.abs(_v.x) < 0.25 && Math.abs(_v.y) < 0.3) hit = s;
       }
     }
+    if (hit && g.input.pressed('KeyR') && g.keeper?.on) {
+      if (!g.keeper.logShip(hit.def.name)) g.hud.toast('Already in tonight’s log.', 1500);
+    }
     if (hit) {
       const dist = Math.round(g.camera.position.distanceTo(hit.grp.position));
-      this.label.innerHTML = `<b>${hit.def.name}</b><span>${hit.def.note}</span><i>${(dist / 1852).toFixed(1)} nautical miles · heading ${hit.def.dir > 0 ? 'south' : 'north'}</i>`;
+      this.label.innerHTML = `<b>${hit.def.name}</b><span>${hit.def.note}</span><i>${(dist / 1852).toFixed(1)} nautical miles · heading ${hit.def.dir > 0 ? 'south' : 'north'}${g.keeper?.on ? (g.keeper.logged.has(hit.def.name) ? ' · logged ✓' : ' · R to log it') : ''}</i>`;
       this.label.classList.remove('hidden');
     } else this.label.classList.add('hidden');
   }

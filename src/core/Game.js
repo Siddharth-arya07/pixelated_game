@@ -52,6 +52,9 @@ import { TextPrompt } from '../ui/TextPrompt.js';
 import { Town } from '../systems/Town.js';
 import { Dialogue } from '../ui/Dialogue.js';
 import { SeaScene } from '../scenes/SeaScene.js';
+import { SpaceScene } from '../scenes/SpaceScene.js';
+import { Keeper } from '../systems/Keeper.js';
+import { Rocket } from '../systems/Rocket.js';
 import { Polaroid } from '../systems/Polaroid.js';
 import { BookUI } from '../ui/BookUI.js';
 import { CookingSystem } from '../systems/CookingSystem.js';
@@ -171,6 +174,8 @@ export class Game {
     this.prompt = new TextPrompt(this);
     this.town = new Town(this);
     this.dialogue = new Dialogue(this);
+    this.keeper = new Keeper(this);
+    this.rocket = new Rocket(this);
     this.polaroid = new Polaroid(this);
     this.book = new BookUI(this);
     this.weather = new WeatherSystem(this);
@@ -188,6 +193,7 @@ export class Game {
       Cave: new CaveScene(this),
       Bowling: new BowlingScene(this),
       Sea: new SeaScene(this),
+      Space: new SpaceScene(this),
     };
     // Vehicles start parked: truck + bike at the house, boat + jet ski at the pier.
     const world = this.scenes.World;
@@ -198,6 +204,8 @@ export class Game {
     this.ships.setupWorld(world);
     this.balloon.setupWorld(world);
     this.town.setupWorld(world);
+    this.keeper.setupWorld(world);
+    this.rocket.setupWorld(world);
     const place = (id, spawn) => {
       const sp = world.spawns[spawn];
       const y = this.vehicles.get(id).kind !== 'water' ? world.groundHeight(sp.position.x, sp.position.z) : 0;
@@ -547,6 +555,8 @@ export class Game {
     this.phone.update(dt);
     this.holidays.update(dt);
     this.town.update(dt);
+    this.keeper.update(dt);
+    this.rocket.update(dt);
     this.dialogue.update(dt);
     this.hunger.update(dt);
     this.stargazing.update(dt);
@@ -581,6 +591,7 @@ export class Game {
       this.hud.setSpeed(null);
       let hint = this.mp.ride ? `riding with ${this.mp.ride.veh.remoteName ?? 'them'} · MOUSE look · E hop off` : `WASD move · SHIFT run · E interact · I inventory · O phone${this.inventory.equipped === 'flashlight' ? ' · L flashlight' : ''}`;
       if (this.fishing.active) hint = 'LMB cast / reel · E or RMB stop fishing';
+      else if (this.scene?.name === 'Space') hint = 'MOUSE look around · sit back and enjoy the trip';
       else if (this.scene?.name === 'Sea') hint = 'WASD swim · SPACE up · C down · SHIFT kick · hold F log a creature · E interact / climb out at the surface';
       else if (this.seasons.mode === 'skate') hint = 'W push · A/D turn · SPACE brake · MOUSE look · E step off the ice';
       else if (this.seasons.mode === 'sled') hint = 'A/D steer · S drag your feet · MOUSE look · E get off';
@@ -621,6 +632,7 @@ export class Game {
     else if (!this.mp.applyRideCamera(this.camera)) {
       this.player.applyCamera();
       if (!this.focus) this.hunting.applyCamera();
+      this.cameraHook?.(this.camera);
       if (this.zoomFov && !this.focus) {
         this.camera.fov += (this.zoomFov - this.camera.fov) * Math.min(1, this.dtLast * 10);
         this.camera.updateProjectionMatrix();

@@ -223,6 +223,9 @@ E gets up.
 - **The people of Pine Hollow**: ten residents with routines (Doug & Pepper, Mrs. Ortega, the Okafor twins, Officer Pete, Joyce, June, Lou, Marguerite, Nova). Talk daily, give gifts, help with their favours; friendship hearts in the phone's People app. They show on the map.
 - **Diving**: gear from the dive shop at the harbor, then the pier ladder (or X from the stopped boat). Shallows, kelp forest, coral reef, the wreck of the Margaret Rose, an air-pocket cave, the deep trench with mantas, jellies and a singing whale. Hold F to fill your Sea Log. No monsters.
 
+- **Keeper's shift**: open the logbook on Ray's desk (night): wind the lamp's clockwork and polish the lens (hold E on the gallery), log ships through the gallery telescope (R), and on foggy nights guide a lost boat home with the foghorn. Ray pays at dawn. Shared with everyone in the room.
+- **The Moonbeam** (rocket pad by Nova on the summit): a 4½-minute grand tour — the Moon's rabbits, Bloom's glowing mushrooms and sky-jellies, through Saturnine's rings past the space whales, the lantern-folk of Opal, a comet, the nebula, and home. Friends who board during the countdown ride beside you.
+
 ## The map
 
 1 km², always foggy:
