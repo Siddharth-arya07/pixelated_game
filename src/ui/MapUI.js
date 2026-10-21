@@ -21,6 +21,7 @@ const LABELS = [
   ['airfield', 'AIRFIELD'],
   ['mine', 'OLD MINE'],
   ['funland', 'FUNLAND'],
+  ['rocket', 'ROCKET 🚀'],
   ['bowling', 'BOWLING'],
 ];
 
