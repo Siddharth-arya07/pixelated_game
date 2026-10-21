@@ -33,7 +33,8 @@ export const MAP = {
     airfield: { x: 212, z: 250, radius: 108 }, // grass strip east of the drive-in (runway runs east–west)
     mine: { x: -78, z: -52, radius: 14 },
     funland: { x: -300, z: 70, radius: 40 },
-    rocket: { x: -42, z: -226 }, // the Moonbeam's launch pad, by Nova on the summit (no plateau) // the abandoned amusement park, west of town
+    rocket: { x: -42, z: -226 },
+    town: { x: -160, z: 205 }, // label only: where the neighbours live // the Moonbeam's launch pad, by Nova on the summit (no plateau) // the abandoned amusement park, west of town
     bowling: { x: -62, z: 172, radius: 12 }, // Stardust Lanes, just off the town road // the old silver mine, cut into the foot of the mountain
   },
 

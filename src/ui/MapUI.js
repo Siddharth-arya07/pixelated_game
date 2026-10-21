@@ -22,6 +22,7 @@ const LABELS = [
   ['mine', 'OLD MINE'],
   ['funland', 'FUNLAND'],
   ['rocket', 'ROCKET 🚀'],
+  ['town', 'PINE HOLLOW (town)'],
   ['bowling', 'BOWLING'],
 ];
 

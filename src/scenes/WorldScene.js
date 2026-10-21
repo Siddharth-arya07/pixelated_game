@@ -916,7 +916,7 @@ export class WorldScene extends BaseScene {
       standAt: [ax + 2.5, dy, az - 0.8],
     });
     // A brass telescope on the gallery, pointed at the shipping lane.
-    addTelescope(this, ax + 1.9, dy, az - 2.2, -Math.PI / 2 + 0.15, new THREE.Vector3(ax + 1.2, dy, az - 1.4), { sea: true });
+    addTelescope(this, ax + 1.9, dy, az - 2.2, -Math.PI / 2 + 0.15, new THREE.Vector3(ax + 1.1, dy, az - 2.5), { sea: true }); // (step back onto the deck, clear of the lantern room)
     this.#sign(['KEEP OFF', 'CLIFF EDGE'], L.x + 16, L.z + 14, Math.PI * 0.75, { bg: '#d8b020', fg: '#101010' });
     this.place('log', { x: L.x + 12, y: L.y, z: L.z + 8, rotY: 0.4, scale: 0.6, collide: true });
   }
