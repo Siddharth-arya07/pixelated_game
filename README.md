@@ -226,6 +226,8 @@ E gets up.
 - **Keeper's shift**: open the logbook on Ray's desk (night): wind the lamp's clockwork and polish the lens (hold E on the gallery), log ships through the gallery telescope (R), and on foggy nights guide a lost boat home with the foghorn. Ray pays at dawn. Shared with everyone in the room.
 - **The Moonbeam** (rocket pad by Nova on the summit): a 4½-minute grand tour — the Moon's rabbits, Bloom's glowing mushrooms and sky-jellies, through Saturnine's rings past the space whales, the lantern-folk of Opal, a comet, the nebula, and home. Friends who board during the countdown ride beside you.
 
+- **Pine Hollow (the town)**: main street along the town road and on past the junction — hardware store, post office, Rosa's bakery, the 24-hour laundromat (sit and watch the dryers), library (night book drop), barber, the Gazette, town hall with a clock that keeps game time, the fire station, a record shop, Café Moonlight and St. Brigid's — plus a plaza with a fountain and gazebo, and ~30 houses along the roads. Trees are planted around every building's footprint, never through one.
+
 ## The map
 
 1 km², always foggy:

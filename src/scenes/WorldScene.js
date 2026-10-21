@@ -10,6 +10,7 @@ import { buildBonfire } from './Bonfire.js';
 import { buildBackyard } from './Backyard.js';
 import { buildFunland } from './Funland.js';
 import { buildTreehouse } from './Treehouse.js';
+import { buildMainStreet } from './MainStreet.js';
 import { BaseScene } from './BaseScene.js';
 import { Terrain } from '../world/Terrain.js';
 import { MAP } from '../world/MapLayout.js';
@@ -55,6 +56,27 @@ export class WorldScene extends BaseScene {
   }
 
   /** Stop the player wading into the sea (unless they're up on the pier). */
+  /**
+   * XZ footprints of everything solid built so far (houses, shops, fences,
+   * pads, stalls…) — the forest is planted around them, never through them.
+   */
+  footprints() {
+    if (!this._claimed) this._claimed = [];
+    const out = [...this._claimed];
+    for (const g of this._colliderGeos) {
+      g.computeBoundingBox();
+      const b = g.boundingBox;
+      const area = (b.max.x - b.min.x) * (b.max.z - b.min.z);
+      if (area > 6000) continue; // (giant invisible walls etc.)
+      out.push({ minX: b.min.x, maxX: b.max.x, minZ: b.min.z, maxZ: b.max.z });
+    }
+    return out;
+  }
+
+  claimFootprint(f) {
+    (this._claimed ??= []).push(f);
+  }
+
   blocksWalk(x, z, feetY) {
     return feetY < 0.9 && this.terrain.heightAt(x, z) < -0.7;
   }
@@ -82,6 +104,7 @@ export class WorldScene extends BaseScene {
     this.funland = buildFunland(this);
     this.treehouse = buildTreehouse(this);
     this.#bowlingAlley();
+    this.mainStreet = buildMainStreet(this);
     this.#nature();
     this.#bounds();
     console.info(`[World] built in ${(performance.now() - t0).toFixed(0)} ms`);
@@ -931,9 +954,26 @@ export class WorldScene extends BaseScene {
     const keepOut = Object.values(this.poi)
       .filter((p) => p.radius)
       .concat([{ ...this.poi.house, radius: 34 }]);
+    // a coarse grid of building footprints so trees never grow inside anything
+    const CELL = 16;
+    const grid = new Map();
+    for (const f of this.footprints()) {
+      for (let gx = Math.floor((f.minX - 2) / CELL); gx <= Math.floor((f.maxX + 2) / CELL); gx++) {
+        for (let gz = Math.floor((f.minZ - 2) / CELL); gz <= Math.floor((f.maxZ + 2) / CELL); gz++) {
+          const k = gx * 10007 + gz;
+          if (!grid.has(k)) grid.set(k, []);
+          grid.get(k).push(f);
+        }
+      }
+    }
+    const inside = (x, z, m) => {
+      for (const f of grid.get(Math.floor(x / CELL) * 10007 + Math.floor(z / CELL)) ?? []) if (x > f.minX - m && x < f.maxX + m && z > f.minZ - m && z < f.maxZ + m) return true;
+      return false;
+    };
     const ok = (x, z, clear) => {
       if (T.roadDistance(x, z) < clear) return false;
       for (const p of keepOut) if (Math.hypot(x - p.x, z - p.z) < p.radius + 6) return false;
+      if (inside(x, z, clear > 6 ? 2.5 : 1)) return false;
       return true;
     };
     const lists = { tree_pine: [], tree_pine2: [], tree_oak: [], grass: [], bush: [], rock: [], rock2: [] };
