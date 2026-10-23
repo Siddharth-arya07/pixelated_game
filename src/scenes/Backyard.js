@@ -24,6 +24,7 @@ const BOARDS = {
   tetris: { name: 'TETRIS', low: false, fmt: (v) => `${v}` },
   pong2: { name: 'PONG', low: false, fmt: (v) => `${v} wins` },
   bowling: { name: 'BOWLING', low: false, fmt: (v) => `${v}` },
+  roulette: { name: 'ROULETTE', low: false, fmt: (v) => `${v} win${v === 1 ? '' : 's'}` },
 };
 
 export function buildBackyard(scene) {
@@ -151,7 +152,7 @@ class Backyard {
       c.fillStyle = '#e8e8e0';
       const top = (this.scores[k] ?? [])[0];
       c.fillText(top ? `${top.n}  ${b.fmt(top.v)}` : '—', 120, yy);
-      yy += 42;
+      yy += 36;
     }
     this.boardTex.needsUpdate = true;
   }

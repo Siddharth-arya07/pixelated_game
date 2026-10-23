@@ -111,6 +111,10 @@ export const MODELS = {
   pickaxe: { fit: { length: 0.75 } },
   minecart: { fit: { length: 1.4 } },
   lantern: { fit: { height: 0.42 } },
+  // --- Buckshot roulette (J-Toastie, Poly by Google, jeremy, codedeck, Gabriel Valdivia, Jarlan Perez: CC-BY 3.0 · Quaternius, MaverickFX: CC0) ---
+  br_gun: { fit: { length: 0.92 } }, // split into Body / Forend / Barrel (tools/br_export.py)
+  br_bulb: { fit: { height: 0.8 } },
+  br_ashtray: { fit: { length: 0.13 } },
   // --- Townspeople (Quaternius CC0) ---
   npc_woman1: { fit: { height: 1.68 } },
   npc_woman2: { fit: { height: 1.62 } },

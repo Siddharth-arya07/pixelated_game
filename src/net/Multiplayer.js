@@ -614,6 +614,9 @@ class Remote {
     }
     av.setName(this.name, (s.talkLevel ?? 0) > 0.08 && !s.mute);
     av.update(dt, s, g.camera.position);
+    const rig = g.roulette?.rigFor(this.id);
+    if (rig || av.slumpK || av.rigOn) av.applyRig(rig, dt);
+    av.rigOn = !!rig;
     // never look at the inside of someone's head (shared spawns, seats, rides)
     const head = _v.copy(grp.position);
     head.y += av.height * 0.75;

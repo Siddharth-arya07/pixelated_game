@@ -38,6 +38,11 @@ export class InteractionSystem {
 
     // Centre ray first; if it misses, try a small ring of offset rays so tiny
     // props (cans, cigarettes, the laptop) don't need pixel-perfect aim.
+    // Some seats run their own input (the roulette table).
+    if (game.player.seat?.custom) {
+      this.focus = null;
+      return;
+    }
     for (const [ox, oy] of AIM_OFFSETS) {
       this.raycaster.setFromCamera(this._center.set(ox, oy), game.camera);
       const hits = this.raycaster.intersectObjects(scene.interactables, true);

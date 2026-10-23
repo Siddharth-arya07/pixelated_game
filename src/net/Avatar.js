@@ -30,6 +30,8 @@ const BONES = {
   upperR: /upperarm_r_0\d+$/,
   lowerL: /lowerarm_l_0\d+$/,
   lowerR: /lowerarm_r_0\d+$/,
+  handL: /[^_]hand_l_0\d+$/,
+  handR: /[^_]hand_r_0\d+$/,
 };
 
 export class Avatar {
@@ -217,6 +219,52 @@ export class Avatar {
     this.tag.material.opacity = THREE.MathUtils.clamp(1.3 - d / 60, 0.25, 1);
   }
 
+  /**
+   * At the roulette table: arms reach (two-bone IK) for the floating white
+   * hands, the avatar's own hands fold away, and a hit slumps them back.
+   * rig = { l: Vector3, r: Vector3 (world wrist targets), slump: 0..1 }
+   */
+  applyRig(rig, dt) {
+    const b = this.bones;
+    this.slumpK = THREE.MathUtils.damp(this.slumpK ?? 0, rig?.slump ?? 0, rig?.slump ? 14 : 3, dt);
+    for (const h of [b.handL, b.handR]) h?.scale.setScalar(rig ? 0.001 : 1);
+    if (!rig || !this.rigged) return;
+    if (this.slumpK > 0.01) {
+      this.#rot(b.spine, 'x', -0.35 * this.slumpK);
+      this.#rot(b.chest, 'x', -0.25 * this.slumpK);
+      this.#rot(b.neck, 'x', -0.7 * this.slumpK);
+      this.#rot(b.head, 'z', 0.3 * this.slumpK);
+    }
+    this.model.updateMatrixWorld(true);
+    this.#ik(b.upperL, b.lowerL, b.handL, rig.l, -1);
+    this.#ik(b.upperR, b.lowerR, b.handR, rig.r, 1);
+  }
+
+  #ik(upper, lower, hand, target, side) {
+    if (!upper || !lower || !hand || !target) return;
+    const S = upper.getWorldPosition(_s);
+    const E0 = lower.getWorldPosition(_e);
+    const W0 = hand.getWorldPosition(_w);
+    const a = S.distanceTo(E0);
+    const c = E0.distanceTo(W0);
+    const toT = _t.copy(target).sub(S);
+    const d = THREE.MathUtils.clamp(toT.length(), Math.abs(a - c) + 0.01, a + c - 0.002);
+    const dir = toT.normalize();
+    // elbows bend down and out to the side
+    const right = _r.set(1, 0, 0).applyQuaternion(this.group.getWorldQuaternion(_bq));
+    const pole = _p.set(0, -1, 0).addScaledVector(right, side * 0.6);
+    pole.addScaledVector(dir, -pole.dot(dir)).normalize();
+    const cosA = THREE.MathUtils.clamp((a * a + d * d - c * c) / (2 * a * d), -1, 1);
+    const sinA = Math.sqrt(1 - cosA * cosA);
+    const E = _m.copy(S).addScaledVector(dir, a * cosA).addScaledVector(pole, a * sinA);
+    aimBone(upper, E0.clone().sub(S), E.clone().sub(S));
+    upper.updateMatrixWorld(true);
+    const E1 = lower.getWorldPosition(new THREE.Vector3());
+    const W1 = hand.getWorldPosition(new THREE.Vector3());
+    aimBone(lower, W1.sub(E1), _t.copy(S).addScaledVector(dir, d).sub(E1));
+    lower.updateMatrixWorld(true);
+  }
+
   /** Rotate a bone about one of the CHARACTER's axes, on top of its current pose. */
   #rot(bone, axis, angle) {
     if (!bone || !angle) return;
@@ -234,6 +282,15 @@ export class Avatar {
     this.group.parent?.remove(this.group);
     this.tagTex.dispose();
   }
+}
+
+/** Turn a bone (in world space) so its `from` direction points along `to`. */
+function aimBone(bone, from, to) {
+  if (from.lengthSq() < 1e-8 || to.lengthSq() < 1e-8) return;
+  const q = new THREE.Quaternion().setFromUnitVectors(from.normalize(), to.normalize());
+  const wq = bone.getWorldQuaternion(new THREE.Quaternion());
+  const pq = bone.parent.getWorldQuaternion(new THREE.Quaternion());
+  bone.quaternion.copy(pq.invert().multiply(q.multiply(wq)));
 }
 
 /** If a character file is missing: a simple blocky figure. */
@@ -254,3 +311,10 @@ const _pq = new THREE.Quaternion();
 const _bq = new THREE.Quaternion();
 const _dq = new THREE.Quaternion();
 const _ax = new THREE.Vector3();
+const _s = new THREE.Vector3();
+const _e = new THREE.Vector3();
+const _w = new THREE.Vector3();
+const _t = new THREE.Vector3();
+const _r = new THREE.Vector3();
+const _p = new THREE.Vector3();
+const _m = new THREE.Vector3();

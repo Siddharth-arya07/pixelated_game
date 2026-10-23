@@ -228,6 +228,8 @@ E gets up.
 
 - **Pine Hollow (the town)**: main street along the town road and on past the junction — hardware store, post office, Rosa's bakery, the 24-hour laundromat (sit and watch the dryers), library (night book drop), barber, the Gazette, town hall with a clock that keeps game time, the fire station, a record shop, Café Moonlight and St. Brigid's — plus a plaza with a fountain and gazebo, and ~30 houses along the roads. Trees are planted around every building's footprint, never through one.
 
+- **The back room (buckshot roulette, multiplayer only)**: a shack behind your house with one bulb, a felt table and two chairs. Sit down across from a friend: the dealer, just a pair of white hands at the end of the table, shows you the shells (red live, blue blank), loads them out of sight and deals the items. Pick up the shotgun and look at them to shoot them, or down at yourself (a blank on yourself = another turn). Items: magnifying glass, beer, cigarettes, handsaw, handcuffs, burner phone, inverter, expired medicine and adrenaline. Three rounds (2/4/5 charges), best of three, for bragging rights only (wins go on the patio Hall of Fame). Everyone else in the room can stand around and watch. Moves are synced lockstep from a shared seed, so the hidden shell order is never sent over the network.
+
 ## The map
 
 1 km², always foggy:
@@ -306,6 +308,14 @@ Bundled models (converted with `tools/blender_export.py`; textures embedded, hea
 | Furniture, Mini Market, Food, Nature kits | [Kenney](https://kenney.nl) | CC0 |
 | Pickup truck, fishing rod, fish | Quaternius via [Poly Pizza](https://poly.pizza) | CC0 |
 | [Lighthouse](https://poly.pizza/m/bk72ChfpGo-), [fishing boat](https://poly.pizza/m/d2QPCNGeGp3) | Poly by Google via Poly Pizza | **CC-BY 3.0** |
+| [Rigged hand](https://poly.pizza/m/BEy8jbxm6A), [syringe](https://poly.pizza/m/MURJ8NK4N9) (roulette) | J-Toastie via Poly Pizza | **CC-BY 3.0** |
+| [Beer](https://poly.pizza/m/0o4ac2O90Hu) (roulette) | Poly by Google via Poly Pizza | **CC-BY 3.0** |
+| [Saw](https://poly.pizza/m/4inf1tGOi2A) (roulette) | jeremy via Poly Pizza | **CC-BY 3.0** |
+| [Pill bottle](https://poly.pizza/m/vtlZoL2RJj) (roulette) | codedeck via Poly Pizza | **CC-BY 3.0** |
+| [Magnifying glass](https://poly.pizza/m/c8HQVCBMIMR) (roulette) | Gabriel Valdivia via Poly Pizza | **CC-BY 3.0** |
+| [Ashtray](https://poly.pizza/m/aHmJIWIr1vI) (roulette) | Jarlan Perez via Poly Pizza | **CC-BY 3.0** |
+| [Cigarette pack](https://poly.pizza/m/VrpefteXgT), [phone](https://poly.pizza/m/k2kgBepoMU), [ceiling light](https://poly.pizza/m/S3HkX8iTl2) (roulette) | MaverickFX, Quaternius via Poly Pizza | CC0 |
+| Buckshot roulette rules reference | [Bytestorm5/Buckshot-Roulette-Python](https://github.com/Bytestorm5/Buckshot-Roulette-Python) | MIT |
 | [Beer can](https://sketchfab.com/3d-models/beer-can-b3257907af8248ab99cd27ff8c6a86d1) | Arte Hexe | **CC-BY 4.0** |
 | [Low Poly Veggie Lovers Pizza](https://sketchfab.com/3d-models/low-poly-veggie-lovers-pizza-d997cc894ca849f2a3e5736d2cbf3c0d) | zhya | **CC-BY 4.0** |
 | [Marlboro Pack of 20 Cigarettes](https://sketchfab.com/3d-models/marlboro-pack-of-20-cigarettes-4eb251a5b2874b3ea329da82db428a5d) | vmek3d | **CC-BY 4.0** |

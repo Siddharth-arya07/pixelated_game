@@ -198,6 +198,7 @@ export class WorldScene extends BaseScene {
     this.garden = buildGarden(this, hx, y, hz);
     this.#rooftop(hx, y, hz);
     this.#shed(hx - 10, y, hz + 1);
+    this.#backRoom(hx + 1, y, hz - 12);
     this.addSpawn('house_door', [hx, y, hz + 5.6], Math.PI); // on the porch facing the road
     this.addSpawn('default', [hx, y, hz + 5.6], Math.PI);
     this.addSpawn('truck_home', [hx + 7, y, hz + 12], 0);
@@ -562,6 +563,25 @@ export class WorldScene extends BaseScene {
     const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.35), this.mat({ map: signTexture(['MUSIC SHED'], { bg: '#2a1a3a', fg: '#ffd860', w: 96, h: 28 }) }));
     sign.position.set(x, y + 2.35, z + 2.12);
     this.root.add(sign);
+  }
+
+  /** The shack out back (inside: ShedScene, buckshot roulette). Door faces the house. */
+  #backRoom(x, y, z) {
+    const g = this.game;
+    const wall = this.mat({ map: this.tex('planks', 3, 1.5), color: 0x5a4a3a });
+    this.box(4.6, 2.8, 4.4, wall, x, y + 1.4, z);
+    const roof = this.box(5.0, 0.12, 4.8, this.mat({ color: 0x2a2624 }), x, y + 2.92, z, { collide: false });
+    roof.rotation.x = 0.06;
+    this.box(1.16, 2.1, 0.05, this.mat({ color: 0x1a1410 }), x - 1.0, y + 1.05, z + 2.215, { collide: false });
+    const door = this.box(1.0, 2.0, 0.06, this.mat({ map: this.tex('planks', 1, 2), color: 0x8a6a48 }), x - 1.0, y + 1.0, z + 2.23, { collide: false });
+    this.addInteractable(door, { prompt: 'Go into the back room', action: () => g.changeScene('Shed', 'door') });
+    this.addSpawn('rshed_door', [x - 1.0, y, z + 3.3], Math.PI);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.22), this.mat({ map: signTexture(['PRIVATE'], { bg: '#1a1010', fg: '#c03020', w: 64, h: 20 }) }));
+    sign.position.set(x - 1.0, y + 2.2, z + 2.24);
+    this.root.add(sign);
+    // a single bare bulb over the door
+    this.box(0.08, 0.08, 0.08, this.mat({ color: 0xffd890, unlit: true }), x - 1.0, y + 2.5, z + 2.35, { collide: false });
+    this.addLight({ position: [x - 1.0, y + 2.4, z + 2.9], color: 0xffc070, range: 4.5, intensity: 0.8, flicker: 0.08 });
   }
 
   #sign(lines, x, z, rotY, opts = {}) {

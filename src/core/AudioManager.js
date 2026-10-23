@@ -694,6 +694,100 @@ const SYNTH_ONESHOTS = {
     noiseBurst(am, out, { freq: 900, decay: 0.15, peak: 0.5 });
     tone(am, out, { freq: 660, dur: 0.08, peak: 0.08 });
   },
+  // ---- buckshot roulette ----
+  /** Pump back… and forward: two metallic clacks. */
+  rack: (am, out) => {
+    noiseBurst(am, out, { freq: 1800, type: 'bandpass', attack: 0.002, decay: 0.09, peak: 0.8 });
+    tone(am, out, { freq: 420, type: 'square', dur: 0.02, peak: 0.12 });
+    setTimeout(() => {
+      noiseBurst(am, out, { freq: 1300, type: 'bandpass', attack: 0.002, decay: 0.12, peak: 0.95 });
+      tone(am, out, { freq: 300, type: 'square', dur: 0.025, peak: 0.15 });
+    }, 170);
+  },
+  /** Dry hammer fall on a blank. */
+  dryfire: (am, out) => {
+    noiseBurst(am, out, { freq: 3200, type: 'bandpass', attack: 0.001, decay: 0.05, peak: 0.7 });
+    tone(am, out, { freq: 900, type: 'square', dur: 0.012, peak: 0.1 });
+  },
+  shell_in: (am, out, rate = 1) => {
+    noiseBurst(am, out, { freq: 2200 * rate, type: 'bandpass', attack: 0.002, decay: 0.06, peak: 0.45 });
+    setTimeout(() => tone(am, out, { freq: 700 * rate, type: 'triangle', dur: 0.03, peak: 0.08 }), 60);
+  },
+  shell_drop: (am, out, rate = 1) => {
+    tone(am, out, { freq: 1500 * rate, type: 'triangle', dur: 0.02, peak: 0.07 });
+    setTimeout(() => tone(am, out, { freq: 1250 * rate, type: 'triangle', dur: 0.015, peak: 0.04 }), 90);
+  },
+  saw_stroke: (am, out, rate = 1) => noiseBurst(am, out, { freq: 3400 * rate, type: 'bandpass', attack: 0.06, decay: 0.16, peak: 0.35 }),
+  cuffs: (am, out) => {
+    for (let i = 0; i < 5; i++) tone(am, out, { freq: 2600 + (i % 2) * 500, type: 'square', start: i * 0.035, dur: 0.008, peak: 0.08 });
+    noiseBurst(am, out, { freq: 4200, type: 'highpass', decay: 0.2, peak: 0.25 });
+  },
+  cuffs_break: (am, out) => {
+    noiseBurst(am, out, { freq: 3000, type: 'bandpass', attack: 0.001, decay: 0.15, peak: 0.6 });
+    tone(am, out, { freq: 1900, type: 'triangle', dur: 0.06, peak: 0.1 });
+  },
+  defib_beep: (am, out, rate = 1) => tone(am, out, { freq: 1046 * rate, type: 'square', dur: 0.09, peak: 0.07 }),
+  defib_charge: (am, out) => {
+    const ctx = am.ctx;
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    const g = ctx.createGain();
+    const t = ctx.currentTime;
+    o.frequency.setValueAtTime(300, t);
+    o.frequency.exponentialRampToValueAtTime(3800, t + 0.9);
+    g.gain.setValueAtTime(0.0, t);
+    g.gain.linearRampToValueAtTime(0.06, t + 0.1);
+    g.gain.linearRampToValueAtTime(0.0, t + 0.95);
+    o.connect(g).connect(out);
+    o.start(t);
+    o.stop(t + 1);
+    setTimeout(() => noiseBurst(am, out, { freq: 900, attack: 0.002, decay: 0.25, peak: 0.9 }), 950);
+  },
+  /** Ears ringing after a point-blank shot. */
+  tinnitus: (am, out) => {
+    const ctx = am.ctx;
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = 3600;
+    const g = ctx.createGain();
+    const t = ctx.currentTime;
+    g.gain.setValueAtTime(0.05, t);
+    g.gain.exponentialRampToValueAtTime(0.0005, t + 4.5);
+    o.connect(g).connect(out);
+    o.start(t);
+    o.stop(t + 4.6);
+  },
+  heartbeat: (am, out) => {
+    tone(am, out, { freq: 52, type: 'sine', dur: 0.09, peak: 0.6 });
+    tone(am, out, { freq: 46, type: 'sine', start: 0.22, dur: 0.11, peak: 0.45 });
+  },
+  zap: (am, out) => {
+    for (let i = 0; i < 6; i++) tone(am, out, { freq: 160 + Math.random() * 900, type: 'sawtooth', start: i * 0.03, dur: 0.025, peak: 0.08 });
+    noiseBurst(am, out, { freq: 5000, type: 'highpass', attack: 0.002, decay: 0.15, peak: 0.25 });
+  },
+  rattle: (am, out) => {
+    for (let i = 0; i < 7; i++) noiseBurst(am, out, { freq: 3500 + Math.random() * 1500, type: 'bandpass', attack: 0.001, decay: 0.03, peak: 0.25 + Math.random() * 0.15 });
+  },
+  phone_flip: (am, out) => {
+    tone(am, out, { freq: 2400, type: 'triangle', dur: 0.015, peak: 0.12 });
+    setTimeout(() => tone(am, out, { freq: 1600, type: 'square', dur: 0.03, peak: 0.04 }), 120);
+  },
+  phone_voice: (am, out) => {
+    // a garbled, muffled voice through the earpiece
+    for (let i = 0; i < 9; i++) tone(am, out, { freq: 180 + Math.random() * 160, type: 'sawtooth', start: i * 0.11, dur: 0.07 + Math.random() * 0.05, peak: 0.025 });
+  },
+  stab: (am, out) => {
+    noiseBurst(am, out, { freq: 1200, type: 'bandpass', attack: 0.001, decay: 0.05, peak: 0.4 });
+    tone(am, out, { freq: 120, type: 'sine', dur: 0.12, peak: 0.25 });
+  },
+  splat: (am, out) => {
+    noiseBurst(am, out, { freq: 500, type: 'lowpass', attack: 0.002, decay: 0.25, peak: 0.6 });
+    setTimeout(() => noiseBurst(am, out, { freq: 900, type: 'bandpass', attack: 0.002, decay: 0.12, peak: 0.25 }), 80);
+  },
+  thud: (am, out) => {
+    noiseBurst(am, out, { freq: 180, attack: 0.002, decay: 0.3, peak: 0.9 });
+    tone(am, out, { freq: 60, type: 'sine', dur: 0.1, peak: 0.4 });
+  },
 };
 
 export { SYNTH_LOOPS };

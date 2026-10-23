@@ -45,6 +45,8 @@ import { Radio } from '../systems/Radio.js';
 import { PlaneFX } from '../vehicles/PlaneFX.js';
 import { Balloon } from '../systems/Balloon.js';
 import { BowlingScene } from '../scenes/BowlingScene.js';
+import { ShedScene } from '../scenes/ShedScene.js';
+import { Roulette } from '../systems/Roulette.js';
 import { Camping } from '../systems/Camping.js';
 import { Phone } from '../ui/Phone.js';
 import { Holidays } from '../systems/Holidays.js';
@@ -176,6 +178,7 @@ export class Game {
     this.dialogue = new Dialogue(this);
     this.keeper = new Keeper(this);
     this.rocket = new Rocket(this);
+    this.roulette = new Roulette(this);
     this.polaroid = new Polaroid(this);
     this.book = new BookUI(this);
     this.weather = new WeatherSystem(this);
@@ -192,6 +195,7 @@ export class Game {
       Dream: new DreamScene(this),
       Cave: new CaveScene(this),
       Bowling: new BowlingScene(this),
+      Shed: new ShedScene(this),
       Sea: new SeaScene(this),
       Space: new SpaceScene(this),
     };
@@ -557,6 +561,7 @@ export class Game {
     this.town.update(dt);
     this.keeper.update(dt);
     this.rocket.update(dt);
+    this.roulette.update(dt);
     this.dialogue.update(dt);
     this.hunger.update(dt);
     this.stargazing.update(dt);
@@ -600,6 +605,7 @@ export class Game {
       else if (this.inventory.equipped === 'jar') hint = `LMB catch a firefly (${this.fireflies.jar}/20 in the jar) · E interact · I inventory`;
       else if (this.polaroid.equipped) hint = 'LMB take photo · Q / scroll film · RMB zoom · K album · X put away';
       else if (this.viewModel.smoking) hint = `HOLD LMB drag · R flick ash · G toss${this.player.seated ? ' · E stand' : ' · WASD move'}`;
+      else if (this.player.seat?.hint) hint = this.player.seat.hint();
       else if (this.player.seated) hint = 'MOUSE look · I inventory (smoke, drink) · E stand up';
       else if (this.hunting.equipped) hint = 'LMB fire · RMB aim · R reload · E interact · I inventory';
       else if (this.interaction.focus?.def.hint) hint = this.interaction.focus.def.hint;
