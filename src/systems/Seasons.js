@@ -343,7 +343,8 @@ export class Seasons {
     if (this.noiseGain) this.noiseGain.gain.setTargetAtTime(Math.min(0.25, (this.speed ?? 0) * 0.025), g.audio.ctx.currentTime, 0.1);
 
     // falling snow / petals / leaves around the camera
-    const want = scene.outdoor && (s === 'winter' || s === 'autumn' || (s === 'spring' && Math.sin(g.time * 0.05) > -0.3));
+    // memory places keep their own season (Fremont is always late autumn)
+    const want = scene.outdoor && (!scene.memory || scene.name === 'Fremont') && (s === 'winter' || s === 'autumn' || (s === 'spring' && Math.sin(g.time * 0.05) > -0.3));
     if (want && this.points.parent !== scene.root) scene.root.add(this.points);
     if (!want) {
       this.points.removeFromParent();

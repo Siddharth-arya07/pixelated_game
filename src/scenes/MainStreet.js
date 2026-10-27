@@ -403,6 +403,7 @@ class MainStreet {
       }
     }
     if (!c) return;
+    this.plaza = c;
     const y = s.groundHeight(c.x, c.z);
     const stone = s.mat({ map: s.tex('checker_tiles', 4, 4), color: 0xb8b0a0 });
     const pave = new THREE.Mesh(new THREE.CircleGeometry(9, 24), stone);

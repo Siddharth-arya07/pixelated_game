@@ -81,7 +81,7 @@ export class DayNightCycle {
     const r = this.game.renderer;
     if (scene.outdoor) {
       // Always foggy outside: the wall closes in to ~30 m at night, ~45 m by day.
-      r.setFog(this.fog, 2, Math.min(this.far, 45) + (this.game.farBoost ?? 0));
+      r.setFog(this.fog, 2, Math.min(this.far, 45) + (this.game.farBoost ?? 0) + (scene.fogExtra ?? 0));
       r.setGroundFog(scene.groundFog ?? 0.3, scene.groundFogY ?? 0);
       r.setLight(this.lightDir, this.light, this.ambient);
     } else {

@@ -621,7 +621,10 @@ class Remote {
     const head = _v.copy(grp.position);
     head.y += av.height * 0.75;
     const close = Math.hypot(g.camera.position.x - grp.position.x, g.camera.position.z - grp.position.z) < 0.5 && Math.abs(g.camera.position.y - head.y) < 1;
-    av.body.visible = !close;
+    if (av.kid?.visible || av.wasKid) {
+      av.body.visible = false;
+      av.kid.visible = !close;
+    } else av.body.visible = !close;
   }
 
   dispose() {

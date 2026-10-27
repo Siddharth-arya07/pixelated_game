@@ -698,3 +698,27 @@ body.touch #room { top: calc(48px + env(safe-area-inset-top)); font-size: 14px; 
 #br-fx.wake { background: radial-gradient(ellipse at center, rgba(0,0,0,0) 30%, rgba(80,0,0,0.85) 100%); opacity: 1; transition: opacity 1.2s; }
 #br-fx { z-index: 4; }
 #br { z-index: 5; }
+
+/* ---- the bus (memories) ---- */
+#busmenu { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); z-index: 20; font-family: var(--pixel); }
+#busmenu.hidden { display: none; }
+#busmenu .bm-box { background: #f4ecd8; color: #2a2018; border: 4px solid #1a5a2a; padding: 16px 18px; width: min(440px, calc(100vw - 32px)); box-shadow: 6px 6px 0 rgba(0,0,0,0.5); }
+#busmenu h3 { margin: 0; font-size: 28px; color: #1a5a2a; letter-spacing: 3px; }
+#busmenu p { margin: 2px 0 10px; font-size: 18px; }
+#busmenu button { display: block; width: 100%; text-align: left; margin: 4px 0; padding: 6px 8px; font: inherit; font-size: 19px; background: #fffaf0; border: 2px solid #c8b890; cursor: pointer; color: #2a2018; }
+#busmenu button:hover:not([disabled]) { background: #ffe8a8; border-color: #1a5a2a; }
+#busmenu button[disabled] { opacity: 0.5; cursor: default; }
+#busmenu button b { display: inline-block; width: 22px; color: #1a5a2a; }
+#busmenu button i { display: block; font-style: normal; font-size: 14px; color: #7a6a50; margin-left: 22px; }
+#busmenu .bm-close { text-align: center; background: #e8e0c8; }
+
+/* ---- Niagara: ponchos and spray ---- */
+body.poncho #ui::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3; box-shadow: inset 0 0 90px 30px rgba(40,110,220,0.35); }
+body.spray #ui::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  background-image: radial-gradient(circle at 12% 20%, rgba(255,255,255,0.35) 0 4px, transparent 5px), radial-gradient(circle at 70% 35%, rgba(255,255,255,0.3) 0 6px, transparent 7px), radial-gradient(circle at 40% 70%, rgba(255,255,255,0.3) 0 3px, transparent 4px), radial-gradient(circle at 85% 80%, rgba(255,255,255,0.35) 0 5px, transparent 6px), radial-gradient(circle at 25% 85%, rgba(255,255,255,0.25) 0 4px, transparent 5px), linear-gradient(rgba(230,245,255,0.18), rgba(230,245,255,0.18));
+  background-size: 180px 160px, 220px 200px, 160px 190px, 240px 210px, 200px 170px, 100% 100%; animation: spray 0.6s linear infinite; }
+@keyframes spray { from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; } to { background-position: 0 160px, 0 200px, 0 190px, 0 210px, 0 170px, 0 0; } }
+#busmenu .bm-box { max-height: calc(100vh - 32px); overflow-y: auto; width: min(640px, calc(100vw - 32px)); display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
+#busmenu .bm-box h3, #busmenu .bm-box p, #busmenu .bm-close { grid-column: 1 / -1; }
+#busmenu button { font-size: 17px; padding: 5px 8px; }
+@media (max-width: 520px) { #busmenu .bm-box { grid-template-columns: 1fr; } }

@@ -694,6 +694,48 @@ const SYNTH_ONESHOTS = {
     noiseBurst(am, out, { freq: 900, decay: 0.15, peak: 0.5 });
     tone(am, out, { freq: 660, dur: 0.08, peak: 0.08 });
   },
+  /** A sea lion's honking bark (ork ork ork). */
+  sea_lion: (am, out, rate = 1) => {
+    const ctx = am.ctx;
+    const n = 2 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++) {
+      const t = ctx.currentTime + i * (0.28 + Math.random() * 0.08);
+      const o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      const f = (260 + Math.random() * 80) * rate;
+      o.frequency.setValueAtTime(f * 1.25, t);
+      o.frequency.exponentialRampToValueAtTime(f * 0.75, t + 0.18);
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 900;
+      lp.Q.value = 6;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.22, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+      o.connect(lp).connect(g).connect(out);
+      o.start(t);
+      o.stop(t + 0.25);
+    }
+  },
+  /** A small dog's happy yip. */
+  bark_small: (am, out) => {
+    for (const [st, f] of [[0, 900], [0.16, 1050]]) {
+      const ctx = am.ctx;
+      const o = ctx.createOscillator();
+      o.type = 'triangle';
+      const g = ctx.createGain();
+      const t = ctx.currentTime + st;
+      o.frequency.setValueAtTime(f, t);
+      o.frequency.exponentialRampToValueAtTime(f * 0.55, t + 0.09);
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.16, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.11);
+      o.connect(g).connect(out);
+      o.start(t);
+      o.stop(t + 0.13);
+    }
+  },
   // ---- buckshot roulette ----
   /** Pump back… and forward: two metallic clacks. */
   rack: (am, out) => {

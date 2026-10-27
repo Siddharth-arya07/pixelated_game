@@ -182,7 +182,7 @@ export class PlayerController {
       this.camera.rotation.set(this.pitch + this.pitchOffset, this.yaw, 0, 'YXZ');
       return;
     }
-    const eye = CONFIG.player.eyeHeight - this.radius;
+    const eye = (this.game.scene?.eyeHeight ?? CONFIG.player.eyeHeight) - this.radius;
     const bob = Math.sin(this.headBob) * 0.014;
     this.camera.position.set(this.position.x, this.position.y + eye + bob, this.position.z);
     this.camera.rotation.set(this.pitch + this.pitchOffset, this.yaw, 0, 'YXZ');

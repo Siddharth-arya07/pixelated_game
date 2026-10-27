@@ -111,6 +111,26 @@ export const MODELS = {
   pickaxe: { fit: { length: 0.75 } },
   minecart: { fit: { length: 1.4 } },
   lantern: { fit: { height: 0.42 } },
+  // --- California memories (Quaternius, Kenney, CreativeTrio: CC0 · Poly by Google, Zsky, J-Toastie, sirkitree, Jarlan Perez, jeremy, elkiotbear, Don Carson, Emmett Baber: CC-BY 3.0) ---
+  kid: { fit: { height: 1.32 } }, // a ~9-year-old; head enlarged in code
+  bus: { fit: { length: 12 }, rotateY: Math.PI / 2 },
+  bus_stop_shelter: { fit: { length: 3.6 } },
+  play_structure: { fit: { length: 9 } },
+  swing_set: { fit: { height: 2.4 } },
+  slide: { fit: { height: 2.2 } },
+  merry_go_round: { fit: { length: 2.6 } },
+  chicken: { fit: { height: 0.42 } },
+  pig: { fit: { length: 1.2 } },
+  goat: { fit: { height: 0.85 } },
+  snake: { fit: { length: 0.9 } },
+  snake_corn: { fit: { length: 1.1 } },
+  sea_lion: { fit: { length: 2.0 } },
+  harbor_seal: { fit: { length: 1.5 } },
+  cake: { fit: { length: 0.32 } },
+  balloons: { fit: { height: 1.6 } },
+  picnic_table: { fit: { length: 1.9 } },
+  mailbox_us: { fit: { height: 1.15 } },
+  coin_telescope: { fit: { height: 1.5 } },
   // --- Buckshot roulette (J-Toastie, Poly by Google, jeremy, codedeck, Gabriel Valdivia, Jarlan Perez: CC-BY 3.0 · Quaternius, MaverickFX: CC0) ---
   br_gun: { fit: { length: 0.92 } }, // split into Body / Forend / Barrel (tools/br_export.py)
   br_bulb: { fit: { height: 0.8 } },

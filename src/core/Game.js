@@ -46,6 +46,16 @@ import { PlaneFX } from '../vehicles/PlaneFX.js';
 import { Balloon } from '../systems/Balloon.js';
 import { BowlingScene } from '../scenes/BowlingScene.js';
 import { ShedScene } from '../scenes/ShedScene.js';
+import { FremontScene } from '../scenes/FremontScene.js';
+import { HomeScene } from '../scenes/HomeScene.js';
+import { NatureCenterScene } from '../scenes/NatureCenterScene.js';
+import { Pier39Scene } from '../scenes/Pier39Scene.js';
+import { AquariumScene } from '../scenes/AquariumScene.js';
+import { GoldenGateScene } from '../scenes/GoldenGateScene.js';
+import { GriffithScene } from '../scenes/GriffithScene.js';
+import { PlanetariumScene } from '../scenes/PlanetariumScene.js';
+import { NiagaraScene } from '../scenes/NiagaraScene.js';
+import { Memories } from '../systems/Memories.js';
 import { Roulette } from '../systems/Roulette.js';
 import { Camping } from '../systems/Camping.js';
 import { Phone } from '../ui/Phone.js';
@@ -179,6 +189,7 @@ export class Game {
     this.keeper = new Keeper(this);
     this.rocket = new Rocket(this);
     this.roulette = new Roulette(this);
+    this.memories = new Memories(this);
     this.polaroid = new Polaroid(this);
     this.book = new BookUI(this);
     this.weather = new WeatherSystem(this);
@@ -196,6 +207,15 @@ export class Game {
       Cave: new CaveScene(this),
       Bowling: new BowlingScene(this),
       Shed: new ShedScene(this),
+      Fremont: new FremontScene(this),
+      Home: new HomeScene(this),
+      NatureCenter: new NatureCenterScene(this),
+      Pier39: new Pier39Scene(this),
+      Aquarium: new AquariumScene(this),
+      GoldenGate: new GoldenGateScene(this),
+      Griffith: new GriffithScene(this),
+      Planetarium: new PlanetariumScene(this),
+      Niagara: new NiagaraScene(this),
       Sea: new SeaScene(this),
       Space: new SpaceScene(this),
     };
@@ -210,6 +230,7 @@ export class Game {
     this.town.setupWorld(world);
     this.keeper.setupWorld(world);
     this.rocket.setupWorld(world);
+    this.memories.setupWorld(world);
     const place = (id, spawn) => {
       const sp = world.spawns[spawn];
       const y = this.vehicles.get(id).kind !== 'water' ? world.groundHeight(sp.position.x, sp.position.z) : 0;
@@ -340,7 +361,7 @@ export class Game {
   }
 
   get uiOpen() {
-    return this.inventoryUI.visible || this.shopUI.visible || this.walkman?.visible || this.journal?.visible || this.paint?.visible || this.note?.visible || this.book?.visible || this.polaroid?.visible || this.pets?.visible || this.rayUI?.visible || this.planeFX?.visible || this.phone?.visible || this.prompt?.visible || this.dialogue?.visible;
+    return this.inventoryUI.visible || this.shopUI.visible || this.walkman?.visible || this.journal?.visible || this.paint?.visible || this.note?.visible || this.book?.visible || this.polaroid?.visible || this.pets?.visible || this.rayUI?.visible || this.planeFX?.visible || this.phone?.visible || this.prompt?.visible || this.dialogue?.visible || this.memories?.visible;
   }
 
   openUI(fn) {
@@ -361,6 +382,7 @@ export class Game {
     this.phone.hide();
     this.prompt.hide();
     this.dialogue.hide();
+    this.memories?.hide();
     this.polaroid.hide();
     if (this.shopUI.visible) this.shopping.close();
     this.input.requestLock();
@@ -397,6 +419,7 @@ export class Game {
       this.scene.root.remove(this.camera);
     }
     const scene = this.scenes[name];
+    await scene.preload?.(); // big real-world maps load their data first
     scene.ensureBuilt();
     this.scene = scene;
     scene.root.add(this.camera); // so camera-attached viewmodels render
@@ -562,6 +585,7 @@ export class Game {
     this.keeper.update(dt);
     this.rocket.update(dt);
     this.roulette.update(dt);
+    this.memories.update(dt);
     this.dialogue.update(dt);
     this.hunger.update(dt);
     this.stargazing.update(dt);
@@ -681,6 +705,8 @@ export class Game {
     // Sky shows (fireworks, shooting stars) live well past the fog wall.
     if (this.fireworks.n || this.meteors.list.length || this.meteors.watching) far = Math.max(far, 420);
     if (this.ships.wantFar) far = Math.max(far, (this.farBoost ?? 0) > 1000 ? 1700 : 1100);
+    // memory places with landmarks on the horizon (the bridge, LA, Alcatraz)
+    if (this.scene?.farView) far = Math.max(far, this.scene.farView);
     if (Math.abs(this.camera.far - far) > 1) {
       this.camera.far = far;
       this.camera.updateProjectionMatrix();

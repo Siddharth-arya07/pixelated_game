@@ -230,6 +230,15 @@ E gets up.
 
 - **The back room (buckshot roulette, multiplayer only)**: a shack behind your house with one bulb, a felt table and two chairs. Sit down across from a friend: the dealer, just a pair of white hands at the end of the table, shows you the shells (red live, blue blank), loads them out of sight and deals the items. Pick up the shotgun and look at them to shoot them, or down at yourself (a blank on yourself = another turn). Items: magnifying glass, beer, cigarettes, handsaw, handcuffs, burner phone, inverter, expired medicine and adrenaline. Three rounds (2/4/5 charges), best of three, for bragging rights only (wins go on the patio Hall of Fame). Everyone else in the room can stand around and watch. Moves are synced lockstep from a shared seed, so the hidden shell order is never sent over the network.
 
+- **California memories (and Niagara)**: take the bus from the stop on Pine Hollow's plaza. These places are built at true scale from OpenStreetMap and real elevation data, and in all of them you're a kid again, with Sophie (a small white curly dog with a red collar) trotting after you. Pet her, or tell her to sit.
+  - **Ardenwood, Fremont**: about 5.6 × 4 km of real streets and 9,500 real building footprints, from the townhouses on Duffy Terrace (cream stucco, brown trim, red tile roofs, globe street lamps) up to Ardenwood Elementary, the parks and playgrounds, Ardenwood Historic Farm, and west across the fields to Coyote Hills. It's late autumn after the rain, with sweetgum leaves everywhere.
+  - **Home**: the townhouse has a birthday cake with candles to blow out, balloons, cartoons on the TV, her room with glow-in-the-dark stars, Sophie's bed, and notes left around the house for her to find.
+  - **Coyote Hills Visitor Center**: the reptile corner. The ranger lets you hold a snake.
+  - **Pier 39**: the pier on its deck over the bay, a carousel you can ride, sea lions barking on the K-Dock floats, and Alcatraz and the Golden Gate across the water. The **Aquarium of the Bay** has the walk-through tunnel, the jellyfish room and the bat-ray touch pool.
+  - **The Golden Gate**: the full-size bridge (walk across it), Fort Point, fog banks and the foghorn, and the wildflower overlook.
+  - **Griffith Observatory**: the domes, the Astronomers Monument, coin telescopes, the Hollywood sign, and Los Angeles as a sea of lights at night. Inside there's a planetarium show.
+  - **Niagara Falls, the special trip**: the American, Bridal Veil and Horseshoe Falls taken from the map, with mist and a rainbow. Ride the **Maid of the Mist** in a blue poncho (it runs on the shared clock, so friends share the boat), take the elevator down to the **Cave of the Winds** and the Hurricane Deck, and go up the Prospect Point tower.
+
 ## The map
 
 1 km², always foggy:
@@ -316,6 +325,20 @@ Bundled models (converted with `tools/blender_export.py`; textures embedded, hea
 | [Ashtray](https://poly.pizza/m/aHmJIWIr1vI) (roulette) | Jarlan Perez via Poly Pizza | **CC-BY 3.0** |
 | [Cigarette pack](https://poly.pizza/m/VrpefteXgT), [phone](https://poly.pizza/m/k2kgBepoMU), [ceiling light](https://poly.pizza/m/S3HkX8iTl2) (roulette) | MaverickFX, Quaternius via Poly Pizza | CC0 |
 | Buckshot roulette rules reference | [Bytestorm5/Buckshot-Roulette-Python](https://github.com/Bytestorm5/Buckshot-Roulette-Python) | MIT |
+| Map data for the memory places | © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors | ODbL |
+| Elevation for the memory places | [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (USGS 3DEP, SRTM and others) | public domain / open |
+| Kid (Animated Woman, recoloured), snake, chicken, pig, phone, street light | Quaternius via Poly Pizza | CC0 |
+| Birthday cake | Kenney via Poly Pizza | CC0 |
+| [Bus](https://poly.pizza/m/4CPpvEmrMoF), [sea lion](https://poly.pizza/m/45HRvXYpvUG), [goat](https://poly.pizza/m/d7dImmjtF8E), [swing set](https://poly.pizza/m/e-IJdcqZH4p), [slide](https://poly.pizza/m/dDe3njWPbg0) | Poly by Google via Poly Pizza | CC-BY 3.0 |
+| [Bus stop](https://poly.pizza/m/OWczicNWhO) | Zsky via Poly Pizza | CC-BY 3.0 |
+| [Picnic table](https://poly.pizza/m/LM6QWe8kFT) | J-Toastie via Poly Pizza | CC-BY 3.0 |
+| [Merry-go-round](https://poly.pizza/m/8BliGG-e55g) | sirkitree via Poly Pizza | CC-BY 3.0 |
+| [Balloons](https://poly.pizza/m/eRag_AC3KiS) | Jarlan Perez via Poly Pizza | CC-BY 3.0 |
+| [Seal](https://poly.pizza/m/428MKgODp0H) | jeremy via Poly Pizza | CC-BY 3.0 |
+| [Corn snake](https://poly.pizza/m/bJ2kKpMmPq) | elkiotbear via Poly Pizza | CC-BY 3.0 |
+| [Telescope](https://poly.pizza/m/3HJCpDzBQEw) | Don Carson via Poly Pizza | CC-BY 3.0 |
+| [Play structure](https://poly.pizza/m/ee0cso-KZnC) | Emmett Baber via Poly Pizza | CC-BY 3.0 |
+| [Mailbox](https://poly.pizza/m/2olZ0G8iur) | CreativeTrio via Poly Pizza | CC0 |
 | [Beer can](https://sketchfab.com/3d-models/beer-can-b3257907af8248ab99cd27ff8c6a86d1) | Arte Hexe | **CC-BY 4.0** |
 | [Low Poly Veggie Lovers Pizza](https://sketchfab.com/3d-models/low-poly-veggie-lovers-pizza-d997cc894ca849f2a3e5736d2cbf3c0d) | zhya | **CC-BY 4.0** |
 | [Marlboro Pack of 20 Cigarettes](https://sketchfab.com/3d-models/marlboro-pack-of-20-cigarettes-4eb251a5b2874b3ea329da82db428a5d) | vmek3d | **CC-BY 4.0** |

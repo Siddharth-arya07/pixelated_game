@@ -127,7 +127,54 @@ export class Avatar {
    * Pose from a state snapshot: { a: anim, sp: speed, it: item, sm: smoking,
    * fl: flashlight, pitch } — the group is already placed/rotated by the caller.
    */
+  /** In the memory places everyone's a kid: Quaternius rig, real walk/run clips. */
+  #kidMode(on, s, dt) {
+    if (on && !this.kid) {
+      const m = this.game.assets.model('kid');
+      if (!m) return false;
+      this.kid = m;
+      this.kidHead = null;
+      m.traverse((o) => {
+        if (o.isBone && /^Head$/.test(o.name)) this.kidHead = o;
+        if (o.isMesh) o.frustumCulled = false;
+      });
+      this.kidMixer = new THREE.AnimationMixer(m);
+      this.kidActs = {};
+      for (const c of m.userData.animations ?? []) this.kidActs[c.name.split('|').pop()] = this.kidMixer.clipAction(c);
+      this.group.add(m);
+    }
+    if (!this.kid) return false;
+    this.kid.visible = on;
+    this.body.visible = this.body.visible && !on;
+    if (!on) return false;
+    const a = s.a ?? 'idle';
+    const want = a === 'run' ? 'Running' : a === 'walk' ? 'Walking' : a === 'sit' || a === 'sitground' || a === 'drive' || a === 'ride' ? 'SitIdle' : 'Idle';
+    if (want !== this.kidAct && this.kidActs[want]) {
+      this.kidActs[this.kidAct]?.fadeOut(0.25);
+      this.kidActs[want].reset().fadeIn(0.25).play();
+      this.kidAct = want;
+    }
+    this.kidMixer.update(dt);
+    this.kidHead?.scale.setScalar(1.32); // a child's proportions
+    this.kid.position.y = a === 'sit' ? -0.35 : 0;
+    this.tag.position.y = 1.32 + 0.35;
+    return true;
+  }
+
   update(dt, s, camPos) {
+    const kid = !!this.game.scenes?.[s.sc]?.memory;
+    if (this.#kidMode(kid, s, dt)) {
+      this.wasKid = true;
+      const d = camPos ? camPos.distanceTo(this.group.position) : 0;
+      this.tag.visible = d < 70;
+      this.gun.visible = this.ember.visible = this.beam.visible = false;
+      return;
+    }
+    if (this.wasKid) {
+      this.wasKid = false;
+      this.body.visible = true;
+      this.tag.position.y = this.height + 0.35;
+    }
     const anim = s.a ?? 'idle';
     const speed = s.sp ?? 0;
     for (const [b, q] of this.rest) b.quaternion.copy(q);

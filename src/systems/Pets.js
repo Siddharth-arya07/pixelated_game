@@ -252,7 +252,7 @@ export class Pets {
     let i = 0;
     for (const a of this.strays.values()) {
       // pets wait at home for trips to the bottom of the sea, space and dreams
-      const follows = a.owned && !a.stay && !['Sea', 'Space', 'Dream'].includes(scene.name);
+      const follows = a.owned && !a.stay && !['Sea', 'Space', 'Dream'].includes(scene.name) && !scene.memory;
       const inScene = follows ? true : a.owned && a.stay ? a.stayScene === scene.name : scene.name === 'World' && !taken.has(a.def.sid) && !a.takenByRemote;
       this.#attach(a, inScene ? scene : null);
       if (!inScene) continue;
