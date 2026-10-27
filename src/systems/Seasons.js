@@ -342,9 +342,8 @@ export class Seasons {
     else if (this.mode === 'sled') this.#sled(dt);
     if (this.noiseGain) this.noiseGain.gain.setTargetAtTime(Math.min(0.25, (this.speed ?? 0) * 0.025), g.audio.ctx.currentTime, 0.1);
 
-    // falling snow / petals / leaves around the camera
-    // memory places keep their own season (Fremont is always late autumn)
-    const want = scene.outdoor && (!scene.memory || scene.name === 'Fremont') && (s === 'winter' || s === 'autumn' || (s === 'spring' && Math.sin(g.time * 0.05) > -0.3));
+    // falling snow / petals / leaves: switched off (they read as floating dots)
+    const want = false;
     if (want && this.points.parent !== scene.root) scene.root.add(this.points);
     if (!want) {
       this.points.removeFromParent();

@@ -618,7 +618,7 @@ export class Game {
       );
     } else {
       this.hud.setSpeed(null);
-      let hint = this.mp.ride ? `riding with ${this.mp.ride.veh.remoteName ?? 'them'} · MOUSE look · E hop off` : `WASD move · SHIFT run · E interact · I inventory · O phone${this.inventory.equipped === 'flashlight' ? ' · L flashlight' : ''}`;
+      let hint = this.mp.ride ? `riding with ${this.mp.ride.veh.remoteName ?? 'them'} · MOUSE look · E hop off` : `WASD move · SHIFT run · E interact · I inventory · O phone · H bus${this.inventory.equipped === 'flashlight' ? ' · L flashlight' : ''}`;
       if (this.fishing.active) hint = 'LMB cast / reel · E or RMB stop fishing';
       else if (this.scene?.name === 'Space') hint = 'MOUSE look around · sit back and enjoy the trip';
       else if (this.scene?.name === 'Sea') hint = 'WASD swim · SPACE up · C down · SHIFT kick · hold F log a creature · E interact / climb out at the surface';

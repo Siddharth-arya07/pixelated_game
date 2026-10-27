@@ -78,7 +78,7 @@ export class Memories {
       const isHere = d.scene === here && (d.scene !== 'Fremont' || d.spawn === 'bus_stop');
       return `<button data-i="${i}" ${built && !isHere ? '' : 'disabled'}><b>${i + 1}</b> ${d.name}<i>${isHere ? 'you are here' : built ? d.blurb : 'not yet…'}</i></button>`;
     }).join('');
-    this.el.innerHTML = `<div class="bm-box"><h3>THE BUS</h3><p>Where to?</p>${rows}<button class="bm-close">stay here (Esc)</button></div>`;
+    this.el.innerHTML = `<div class="bm-box"><h3>THE BUS</h3><p>Where to? (press H anywhere to call it)</p>${rows}<button class="bm-close">stay here (Esc)</button></div>`;
     g.openUI(() => {
       this.visible = true;
       this.el.classList.remove('hidden');
@@ -94,6 +94,9 @@ export class Memories {
     const g = this.game;
     if (this.visible) {
       for (let i = 0; i < DESTINATIONS.length; i++) if (g.input.pressed(`Digit${i + 1}`)) this.#go(i);
+    } else if (g.input.pressed('KeyH') && !g.uiOpen && !g.focus && g.state === 'playing' && !g.player.seat?.custom) {
+      // H: hop on the bus from anywhere, no walking to a stop
+      this.openBus(g.scene);
     }
     this.#sophies(dt);
   }
