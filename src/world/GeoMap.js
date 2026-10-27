@@ -227,6 +227,45 @@ export class GeoMap {
     return this.data.pois.find((p) => p.n.toLowerCase() === n) ?? this.data.pois.find((p) => p.n.toLowerCase().includes(n)) ?? null;
   }
 
+  /**
+   * The outside of a building's wall that best faces (tx, tz): where a door
+   * goes. Returns the wall midpoint, its outward normal and the yaw that
+   * faces out of it.
+   */
+  wallFacing(b, tx, tz, minLen = 2.5) {
+    let best = null;
+    for (let i = 0; i < b.pts.length; i++) {
+      const [ax, az] = b.pts[i];
+      const [bx, bz] = b.pts[(i + 1) % b.pts.length];
+      const len = Math.hypot(bx - ax, bz - az);
+      if (len < minLen) continue;
+      const mx = (ax + bx) / 2;
+      const mz = (az + bz) / 2;
+      let nx = (bz - az) / len;
+      let nz = -(bx - ax) / len;
+      if (pointInPoly(mx + nx * 0.5, mz + nz * 0.5, b.pts)) {
+        nx = -nx;
+        nz = -nz;
+      }
+      const tl = Math.hypot(tx - mx, tz - mz) || 1;
+      const facing = (nx * (tx - mx) + nz * (tz - mz)) / tl; // 1 = looking right at it
+      const score = facing * 2 - tl / 60 + Math.min(len, 8) / 16;
+      if (!best || score > best.score) best = { score, x: mx, z: mz, nx, nz, len };
+    }
+    if (best) best.yaw = Math.atan2(best.nx, best.nz);
+    return best;
+  }
+
+  /** The building nearest (x, z) (centroid or containing it). */
+  buildingAt(x, z, r = 40) {
+    let best = null;
+    for (const b of this.buildingsNear(x, z, r + 60)) {
+      const d = pointInPoly(x, z, b.pts) ? 0 : Math.hypot(b.cx - x, b.cz - z);
+      if (d < r && (!best || d < best.d)) best = { d, b };
+    }
+    return best?.b ?? null;
+  }
+
   /** Buildings whose centroid is within r of (x, z). */
   buildingsNear(x, z, r) {
     return this.buildings.filter((b) => Math.hypot(b.cx - x, b.cz - z) < r);
@@ -447,9 +486,9 @@ export class GeoMap {
   buildRoads({ asphalt, concrete, path, water, fence } = {}) {
     const s = this.scene;
     const m = {
-      asphalt: asphalt ?? s.mat({ map: s.tex('asphalt', 1, 1), color: 0x8a8a8a }),
+      asphalt: asphalt ?? s.mat({ map: s.tex('asphalt', 1, 1), color: 0x8a8a8a, affine: 0 }),
       concrete: concrete ?? s.mat({ color: 0xb8b4aa }),
-      path: path ?? s.mat({ map: s.tex('gravel', 1, 1), color: 0xb0a080 }),
+      path: path ?? s.mat({ map: s.tex('gravel', 1, 1), color: 0xb0a080, affine: 0 }),
       water: water ?? s.mat({ color: 0x3a6a8a, opacity: 0.85 }),
       fence: fence ?? s.mat({ color: 0x1a1a1c, doubleSide: true }),
     };

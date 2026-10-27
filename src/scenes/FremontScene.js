@@ -105,6 +105,25 @@ export class FremontScene extends BaseScene {
     this.busStop = best;
   }
 
+  /** Labels for the map (M). */
+  mapLabels() {
+    const L = [];
+    const sp = (k, name, color) => this.spawns[k] && L.push({ name, x: this.spawns[k].position.x, z: this.spawns[k].position.z, color });
+    const poi = (q, name, color) => {
+      const p = this.map.poi(q);
+      if (p) L.push({ name: name ?? p.n, x: p.x, z: p.z, color });
+    };
+    sp('bus_stop', 'Bus stop', '#1a5a2a');
+    if (this.homeDoorAt) L.push({ name: 'Home ♥', x: this.homeDoorAt.x, z: this.homeDoorAt.z, color: '#e0306a' });
+    poi('Ardenwood Elementary School', 'Ardenwood Elementary', '#2a5a8a');
+    poi('The Patterson House', 'Ardenwood Historic Farm');
+    poi('Coyote Hills Visitor Center', 'Coyote Hills (snakes!)');
+    poi('Deep Creek Park');
+    poi('Ardenwood Plaza');
+    poi('Coyote Hills Regional Park', 'Coyote Hills');
+    return L;
+  }
+
   #buildings() {
     const s = this;
     const rnd = (b, n) => {
@@ -114,11 +133,11 @@ export class FremontScene extends BaseScene {
     };
     const C = (hex) => new THREE.Color(hex);
     const mats = {
-      townhouse: { wall: s.mat({ map: townhouseWall(), vertexColors: true }), roof: s.mat({ map: tileRoof(), vertexColors: true }) },
-      house: { wall: s.mat({ map: houseWall(), vertexColors: true }), roof: s.mat({ map: shingleRoof(), vertexColors: true }) },
-      school: { wall: s.mat({ map: schoolWall(), vertexColors: true }), roof: s.mat({ map: shingleRoof(), vertexColors: true }) },
-      shop: { wall: s.mat({ map: shopWall(), vertexColors: true }), roof: s.mat({ color: 0xffffff, vertexColors: true }) },
-      barn: { wall: s.mat({ map: barnWall(), vertexColors: true }), roof: s.mat({ map: shingleRoof(), vertexColors: true }) },
+      townhouse: { wall: s.mat({ map: townhouseWall(), vertexColors: true, affine: 0 }), roof: s.mat({ map: tileRoof(), vertexColors: true, affine: 0 }) },
+      house: { wall: s.mat({ map: houseWall(), vertexColors: true, affine: 0 }), roof: s.mat({ map: shingleRoof(), vertexColors: true, affine: 0 }) },
+      school: { wall: s.mat({ map: schoolWall(), vertexColors: true, affine: 0 }), roof: s.mat({ map: shingleRoof(), vertexColors: true, affine: 0 }) },
+      shop: { wall: s.mat({ map: shopWall(), vertexColors: true, affine: 0 }), roof: s.mat({ color: 0xffffff, vertexColors: true, affine: 0 }) },
+      barn: { wall: s.mat({ map: barnWall(), vertexColors: true, affine: 0 }), roof: s.mat({ map: shingleRoof(), vertexColors: true, affine: 0 }) },
     };
     this.map.buildBuildings((b) => {
       const r = rnd(b, 0);
@@ -236,25 +255,21 @@ export class FremontScene extends BaseScene {
   /** Put a door on the home's wall that faces the nearest lane. */
   #homeDoor(b) {
     const m = this.map;
-    let best = null;
-    for (let i = 0; i < b.pts.length; i++) {
-      const [ax, az] = b.pts[i];
-      const [bx, bz] = b.pts[(i + 1) % b.pts.length];
-      const len = Math.hypot(bx - ax, bz - az);
-      if (len < 3) continue;
-      const mx = (ax + bx) / 2;
-      const mz = (az + bz) / 2;
-      // outward normal
-      let nx = (bz - az) / len;
-      let nz = -(bx - ax) / len;
-      if (Math.hypot(mx + nx - b.cx, mz + nz - b.cz) < Math.hypot(mx - b.cx, mz - b.cz)) {
-        nx = -nx;
-        nz = -nz;
+    let tx = this.duffy.x;
+    let tz = this.duffy.z;
+    let bd = Infinity;
+    for (const r of this.complexLanes) {
+      for (const [x, z] of r.pts) {
+        const d = Math.hypot(x - b.cx, z - b.cz);
+        if (d < bd) {
+          bd = d;
+          tx = x;
+          tz = z;
+        }
       }
-      const road = m.nearRoad(mx + nx * 6, mz + nz * 6, 6);
-      const score = (road ? 0 : 50) + Math.hypot(mx - this.duffy.x, mz - this.duffy.z);
-      if (!best || score < best.score) best = { score, mx, mz, nx, nz };
     }
+    const w = m.wallFacing(b, tx, tz);
+    const best = w && { mx: w.x, mz: w.z, nx: w.nx, nz: w.nz };
     if (!best) return;
     const y = b.ground ?? m.heightAt(best.mx, best.mz);
     const yaw = Math.atan2(best.nx, best.nz);
@@ -305,8 +320,12 @@ export class FremontScene extends BaseScene {
       sign.position.set(sx + (dx / l) * 2.2, y + 2.6, sz + (dz / l) * 2.2);
       sign.rotation.y = yaw;
       this.root.add(sign);
-      this.addSpawn('bus_stop', [sx + nx * 1.2, y, sz + nz * 1.2], Math.atan2(-nx, -nz));
-      this.addSpawn('default', [sx + nx * 1.2, y, sz + nz * 1.2], Math.atan2(-nx, -nz));
+      // arrive on the sidewalk, looking toward home
+      const ax = sx + nx * 1.2;
+      const az = sz + nz * 1.2;
+      const look = Math.atan2(-(this.duffy.x - ax), -(this.duffy.z - az));
+      this.addSpawn('bus_stop', [ax, y, az], look);
+      this.addSpawn('default', [ax, y, az], look);
       this.busStopAt = { x: sx, z: sz, y, yaw, nx, nz, roadX: bs.x, roadZ: bs.z, dx: dx / l, dz: dz / l };
       const post = this.box(0.6, 1.8, 0.6, this.mat({ color: 0x1a5a2a }), sx, y + 0.9, sz, { collide: false });
       post.visible = false;
@@ -356,16 +375,23 @@ export class FremontScene extends BaseScene {
     const vc = m.poi('Coyote Hills Visitor Center');
     if (vc) {
       this.visitorCenter = vc;
-      const y = m.heightAt(vc.x, vc.z);
-      this.box(14, 4.2, 9, this.mat({ map: this.tex('planks', 4, 1), color: 0x8a6a4a }), vc.x, y + 2.1, vc.z);
-      const roof = this.box(15, 0.3, 10, this.mat({ color: 0x4a3a2c }), vc.x, y + 4.35, vc.z, { collide: false });
-      void roof;
-      const door = this.box(1.6, 2.3, 0.1, this.mat({ color: 0x3a2a1c }), vc.x, y + 1.15, vc.z + 4.56, { collide: false });
+      // the real building (or a stand-in if it isn't mapped), door on the wall facing the parking lot
+      const b = m.buildingAt(vc.x, vc.z, 35);
+      const lot = m.areas.filter((a) => a.k === 'parking').map((a) => [a.pts.reduce((s, p) => s + p[0], 0) / a.pts.length, a.pts.reduce((s, p) => s + p[1], 0) / a.pts.length]).sort((p, q) => Math.hypot(p[0] - vc.x, p[1] - vc.z) - Math.hypot(q[0] - vc.x, q[1] - vc.z))[0] ?? [vc.x, vc.z + 30];
+      let w = b && m.wallFacing(b, lot[0], lot[1]);
+      if (!w) {
+        const y0 = m.heightAt(vc.x, vc.z);
+        this.box(14, 4.2, 9, this.mat({ map: this.tex('planks', 4, 1), color: 0x8a6a4a }), vc.x, y0 + 2.1, vc.z);
+        w = { x: vc.x, z: vc.z + 4.5, nx: 0, nz: 1, yaw: 0 };
+      }
+      const y = b?.ground ?? m.heightAt(w.x, w.z);
+      const door = this.box(1.6, 2.3, 0.1, this.mat({ color: 0x3a2a1c }), w.x + w.nx * 0.08, y + 1.15, w.z + w.nz * 0.08, { collide: false, rotY: w.yaw });
       this.addInteractable(door, { prompt: 'Go into the visitor center (there are snakes!)', action: () => g.changeScene('NatureCenter', 'door') });
-      const sign = new THREE.Mesh(new THREE.PlaneGeometry(4, 0.7), this.mat({ map: signTexture(['COYOTE HILLS VISITOR CENTER'], { bg: '#4a3a24', fg: '#f0e0b0', w: 160, h: 28 }) }));
-      sign.position.set(vc.x, y + 3.3, vc.z + 4.56);
+      const sign = new THREE.Mesh(new THREE.PlaneGeometry(4, 0.7), this.mat({ map: signTexture(['COYOTE HILLS VISITOR CENTER'], { bg: '#4a3a24', fg: '#f0e0b0', w: 160, h: 28 }), doubleSide: true }));
+      sign.position.set(w.x + w.nx * 0.1, y + 3.0, w.z + w.nz * 0.1);
+      sign.rotation.y = w.yaw;
       this.root.add(sign);
-      this.addSpawn('visitor_center', [vc.x, y, vc.z + 7], 0);
+      this.addSpawn('visitor_center', [w.x + w.nx * 3, y, w.z + w.nz * 3], w.yaw + Math.PI);
     }
   }
 }

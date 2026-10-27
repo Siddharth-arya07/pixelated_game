@@ -63,11 +63,11 @@ export class GeoScene extends BaseScene {
   #buildings() {
     const s = this;
     const mats = {
-      house: { wall: s.mat({ map: houseWall(), vertexColors: true }), roof: s.mat({ map: tileRoof(), vertexColors: true }) },
-      stucco: { wall: s.mat({ map: townhouseWall(), vertexColors: true }), roof: s.mat({ color: 0xffffff, vertexColors: true }) },
-      shop: { wall: s.mat({ map: shopWall(), vertexColors: true }), roof: s.mat({ color: 0xffffff, vertexColors: true }) },
-      wood: { wall: s.mat({ map: barnWall(), vertexColors: true }), roof: s.mat({ map: shingleRoof(), vertexColors: true }) },
-      brick: { wall: s.mat({ map: s.tex('brick', 1, 1), vertexColors: true }), roof: s.mat({ color: 0xffffff, vertexColors: true }) },
+      house: { wall: s.mat({ map: houseWall(), vertexColors: true, affine: 0 }), roof: s.mat({ map: tileRoof(), vertexColors: true, affine: 0 }) },
+      stucco: { wall: s.mat({ map: townhouseWall(), vertexColors: true, affine: 0 }), roof: s.mat({ color: 0xffffff, vertexColors: true, affine: 0 }) },
+      shop: { wall: s.mat({ map: shopWall(), vertexColors: true, affine: 0 }), roof: s.mat({ color: 0xffffff, vertexColors: true, affine: 0 }) },
+      wood: { wall: s.mat({ map: barnWall(), vertexColors: true, affine: 0 }), roof: s.mat({ map: shingleRoof(), vertexColors: true, affine: 0 }) },
+      brick: { wall: s.mat({ map: s.tex('brick', 1, 1), vertexColors: true, affine: 0 }), roof: s.mat({ color: 0xffffff, vertexColors: true, affine: 0 }) },
     };
     this.map.buildBuildings((b) => this.style(b), mats);
   }

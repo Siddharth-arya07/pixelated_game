@@ -29,6 +29,22 @@ export class Pier39Scene extends GeoScene {
     });
   }
 
+  /** Labels for the map (M). */
+  mapLabels() {
+    const L = [];
+    const sp = (k, name, color) => this.spawns[k] && L.push({ name, x: this.spawns[k].position.x, z: this.spawns[k].position.z, color });
+    const poi = (q, name, color) => {
+      const p = this.map.poi(q);
+      if (p) L.push({ name: name ?? p.n, x: p.x, z: p.z, color });
+    };
+    sp('bus_stop', 'Bus stop', '#1a5a2a');
+    poi('Pier 39', 'Pier 39');
+    poi('San Francisco Carousel', 'Carousel');
+    poi('Pier 39 Sea Lions', 'Sea lions');
+    sp('aquarium', 'Aquarium of the Bay', '#1a4a7a');
+    return L;
+  }
+
   roadMats() {
     // walkways out on the pier are boards, not concrete
     const wood = this.mat({ map: this.tex('planks', 1, 1), color: 0xa88a60 });
@@ -229,15 +245,22 @@ export class Pier39Scene extends GeoScene {
     const g = this.game;
     const a = this.map.poi('Aquarium of the Bay');
     if (!a) return;
-    const y = this.groundHeight(a.x, a.z);
+    // the door on the real building's wall that faces the Embarcadero
+    const m = this.map;
+    const b = m.buildingAt(a.x, a.z, 30);
+    const st = this.spawns.bus_stop?.position ?? new THREE.Vector3(a.x, 0, a.z + 40);
+    const w = (b && m.wallFacing(b, st.x, st.z)) ?? { x: a.x, z: a.z, nx: 0, nz: 1, yaw: 0 };
+    const y = b?.ground ?? this.groundHeight(w.x, w.z);
     const door = new THREE.Mesh(new THREE.BoxGeometry(2.6, 2.6, 0.3), this.mat({ color: 0x1a4a7a }));
-    door.position.set(a.x, y + 1.3, a.z);
+    door.position.set(w.x + w.nx * 0.15, y + 1.3, w.z + w.nz * 0.15);
+    door.rotation.y = w.yaw;
     this.root.add(door);
     const sign = new THREE.Mesh(new THREE.PlaneGeometry(5, 1.1), this.mat({ map: signTexture(['AQUARIUM OF THE BAY'], { bg: '#0a3a6a', fg: '#8ae0ff', w: 160, h: 34 }), doubleSide: true }));
-    sign.position.set(a.x, y + 3.6, a.z);
+    sign.position.set(w.x + w.nx * 0.2, y + 3.6, w.z + w.nz * 0.2);
+    sign.rotation.y = w.yaw;
     this.root.add(sign);
     this.addInteractable(door, { prompt: 'Go into the Aquarium of the Bay', action: () => g.changeScene('Aquarium', 'door') });
-    this.addSpawn('aquarium', [a.x, y, a.z + 3], 0);
+    this.addSpawn('aquarium', [w.x + w.nx * 3, y, w.z + w.nz * 3], w.yaw + Math.PI);
   }
 
   /** Across the water: Alcatraz and the Golden Gate (real bearings, in silhouette). */

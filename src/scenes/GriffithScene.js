@@ -28,6 +28,21 @@ export class GriffithScene extends GeoScene {
     });
   }
 
+  /** Labels for the map (M). */
+  mapLabels() {
+    const L = [];
+    const sp = (k, name, color) => this.spawns[k] && L.push({ name, x: this.spawns[k].position.x, z: this.spawns[k].position.z, color });
+    const poi = (q, name, color) => {
+      const p = this.map.poi(q);
+      if (p) L.push({ name: name ?? p.n, x: p.x, z: p.z, color });
+    };
+    sp('bus_stop', 'Bus stop', '#1a5a2a');
+    if (this.obs) L.push({ name: 'Griffith Observatory', x: this.obs.x, z: this.obs.z, color: '#2a6a5a' });
+    poi("Astronomers' Monument", 'Astronomers Monument');
+    sp('terrace', 'Terrace telescopes');
+    return L;
+  }
+
   style(b) {
     if (/Griffith Observatory/.test(b.n ?? '')) return { skip: true }; // built by hand below
     return super.style(b);

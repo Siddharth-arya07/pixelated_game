@@ -31,6 +31,21 @@ export class GoldenGateScene extends GeoScene {
     });
   }
 
+  /** Labels for the map (M). */
+  mapLabels() {
+    const L = [];
+    const sp = (k, name, color) => this.spawns[k] && L.push({ name, x: this.spawns[k].position.x, z: this.spawns[k].position.z, color });
+    const poi = (q, name, color) => {
+      const p = this.map.poi(q);
+      if (p) L.push({ name: name ?? p.n, x: p.x, z: p.z, color });
+    };
+    sp('bus_stop', 'Bus stop', '#1a5a2a');
+    sp('overlook', 'The overlook (wildflowers)', '#c8a020');
+    sp('bridge', 'Golden Gate Bridge', '#c0362c');
+    poi('Fort Point');
+    return L;
+  }
+
   style(b) {
     if (/Fort Point/i.test(b.n ?? '')) return { mat: 'brick', h: 14, wall: new THREE.Color(0xc87a5a), roofColor: new THREE.Color(0x6a6a66), roof: 'flat' };
     const r = rnd(b);

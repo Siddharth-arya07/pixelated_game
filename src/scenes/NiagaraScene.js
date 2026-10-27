@@ -42,6 +42,23 @@ export class NiagaraScene extends GeoScene {
     this.noDog = false;
   }
 
+  /** Labels for the map (M). */
+  mapLabels() {
+    const L = [];
+    const sp = (k, name, color) => this.spawns[k] && L.push({ name, x: this.spawns[k].position.x, z: this.spawns[k].position.z, color });
+    const poi = (q, name, color) => {
+      const p = this.map.poi(q);
+      if (p) L.push({ name: name ?? p.n, x: p.x, z: p.z, color });
+    };
+    sp('bus_stop', 'Bus stop', '#1a5a2a');
+    for (const c of this.clusters ?? []) L.push({ name: c.name, x: c.x, z: c.z, color: '#2a8aa8' });
+    sp('maid_dock', 'Maid of the Mist', '#1a4a9a');
+    sp('cave_top', 'Cave of the Winds', '#c8a020');
+    sp('prospect', 'Prospect Point tower');
+    poi('Rainbow Bridge');
+    return L;
+  }
+
   landmarks() {
     this.farView = 1500; // see the landmarks on the horizon
     this.#findFalls();
@@ -205,7 +222,7 @@ export class NiagaraScene extends GeoScene {
     this.level = level;
     // the dock: river edge downstream (north) of the American Falls, under Prospect Point
     const pp = m.poi('Prospect Point Observation Tower') ?? m.poi('Prospect Point') ?? { x: am.x, z: am.z - 200 };
-    const waterAt = (x, z) => m.heightAt(x, z) < level + 1.5;
+    const waterAt = (x, z) => [[0, 0], [5, 11], [-5, -11], [5, -11], [-5, 11]].every(([dx, dz]) => m.heightAt(x + dx, z + dz) < level - 0.4);
     let dock = null;
     for (let d = 20; d < 400 && !dock; d += 10) {
       for (let k = 0; k < 16; k++) {
@@ -275,7 +292,7 @@ export class NiagaraScene extends GeoScene {
     // the dock itself
     const dk = this.box(10, 1, 22, this.mat({ map: this.tex('planks', 2, 4), color: 0x7a6a58 }), dock.x, level + 0.3, dock.z);
     void dk;
-    this.addSpawn('maid_dock', [dock.x + 7, level + 0.9, dock.z], 0);
+    this.addSpawn('maid_dock', [dock.x, level + 1.0, dock.z + 6], 0);
     this.interactVolume(dock.x, level + 1.5, dock.z, 12, 3, 24, {
       prompt: () => (this.riding ? 'Get off the boat' : this.#docked() ? 'Board the Maid of the Mist (blue poncho on!)' : `The Maid of the Mist is out on the river… back in ${Math.ceil(CYCLE - this.#phase())}s`),
       range: 6,
@@ -338,11 +355,11 @@ export class NiagaraScene extends GeoScene {
     const top = new THREE.Vector3(bx, by, bz).addScaledVector(dir, 5 * 3.4);
     this.hurricane = top.clone().setY(by + 2 + 5 * 1.4);
     this.addSpawn('cave_winds', [bx, by + 2.4, bz], yaw + Math.PI);
-    // the elevator from Goat Island
-    const y0 = this.groundHeight(cw.x, cw.z);
-    const lift = this.box(3, 3, 3, this.mat({ color: 0x6a6a68 }), cw.x, y0 + 1.5, cw.z);
+    // the elevator from Goat Island: a door on the Cave of the Winds building
+    const w = this.#outsideDoor(cw.x, cw.z);
+    const lift = this.box(1.8, 2.4, 0.2, this.mat({ color: 0x6a6a68 }), w.x + w.nx * 0.12, w.y + 1.2, w.z + w.nz * 0.12, { collide: false, rotY: w.yaw });
     this.addInteractable(lift, { prompt: 'Take the elevator down to the Cave of the Winds (yellow poncho on!)', action: () => this.#teleport('cave_winds', 'Down, down, 175 feet through the rock… the doors open onto roaring white.') });
-    this.addSpawn('cave_top', [cw.x + 3, y0, cw.z + 3], 0);
+    this.addSpawn('cave_top', [w.x + w.nx * 3, this.groundHeight(w.x + w.nx * 3, w.z + w.nz * 3), w.z + w.nz * 3], w.yaw + Math.PI);
     const back = this.box(1.6, 2.4, 0.3, this.mat({ color: 0x6a6a68 }), bx - dir.x * 3, by + 3.4, bz - dir.z * 3, { collide: false });
     this.addInteractable(back, { prompt: 'Elevator back up to Goat Island', action: () => this.#teleport('cave_top', 'Back up into the sunshine. Your poncho drips all the way.') });
   }
@@ -354,10 +371,34 @@ export class NiagaraScene extends GeoScene {
     const y = this.groundHeight(pp.x, pp.z);
     this.busStop(pp.x + 30, pp.z - 30, 0);
     if (this.dock) {
-      const lift = this.box(3, 3, 3, this.mat({ color: 0x8a8a88 }), pp.x, y + 1.5, pp.z);
+      const w = this.#outsideDoor(pp.x, pp.z);
+      const lift = this.box(1.8, 2.4, 0.2, this.mat({ color: 0x8a8a88 }), w.x + w.nx * 0.12, w.y + 1.2, w.z + w.nz * 0.12, { collide: false, rotY: w.yaw });
       this.addInteractable(lift, { prompt: 'Take the tower elevator down to the Maid of the Mist', action: () => this.#teleport('maid_dock', 'The glass elevator drops down the cliff face. The falls fill the whole window.') });
-      this.addSpawn('prospect', [pp.x + 3, y, pp.z + 3], 0);
+      this.addSpawn('prospect', [w.x + w.nx * 3, this.groundHeight(w.x + w.nx * 3, w.z + w.nz * 3), w.z + w.nz * 3], w.yaw + Math.PI);
     }
+    void y;
+  }
+
+  /** A door spot on the outside of the mapped building at (x, z), facing the nearest path. */
+  #outsideDoor(x, z) {
+    const m = this.map;
+    const b = m.buildingAt(x, z, 30);
+    if (!b) return { x, z, y: this.groundHeight(x, z), nx: 0, nz: 1, yaw: 0 };
+    let t = [x, z + 30];
+    let bd = Infinity;
+    for (const r of m.roads) {
+      if (!['footway', 'path', 'pedestrian', 'service', 'residential'].includes(r.t)) continue;
+      for (const [px, pz] of r.pts) {
+        const d = Math.hypot(px - b.cx, pz - b.cz);
+        if (d < bd && !m.insideBuilding(px, pz)) {
+          bd = d;
+          t = [px, pz];
+        }
+      }
+    }
+    const w = m.wallFacing(b, t[0], t[1]) ?? { x, z, nx: 0, nz: 1, yaw: 0 };
+    // the ground right outside the wall (the footprint's lowest corner can be metres below on a slope)
+    return { ...w, y: this.groundHeight(w.x + w.nx * 1.5, w.z + w.nz * 1.5) };
   }
 
   #teleport(spawn, text) {
